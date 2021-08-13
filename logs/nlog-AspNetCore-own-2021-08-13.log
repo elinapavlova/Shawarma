@@ -1,6 +1,0 @@
-2021-08-13 08:59:47.4880|0|DEBUG|API.Program|init main |url: |action: |API.Program.Main| body: 
-2021-08-13 08:59:49.4243|0|INFO|Microsoft.Hosting.Lifetime|Now listening on: https://localhost:5001 |url: |action: |Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync| body: 
-2021-08-13 08:59:49.4432|0|INFO|Microsoft.Hosting.Lifetime|Now listening on: http://localhost:5000 |url: |action: |Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync| body: 
-2021-08-13 08:59:49.4432|0|INFO|Microsoft.Hosting.Lifetime|Application started. Press Ctrl+C to shut down. |url: |action: |Microsoft.Extensions.Hosting.Internal.ConsoleLifetime.OnApplicationStarted| body: 
-2021-08-13 08:59:49.4432|0|INFO|Microsoft.Hosting.Lifetime|Hosting environment: Development |url: |action: |Microsoft.Extensions.Hosting.Internal.ConsoleLifetime.OnApplicationStarted| body: 
-2021-08-13 08:59:49.4432|0|INFO|Microsoft.Hosting.Lifetime|Content root path: C:\Users\epavlova\RiderProjects\API\API |url: |action: |Microsoft.Extensions.Hosting.Internal.ConsoleLifetime.OnApplicationStarted| body: 
