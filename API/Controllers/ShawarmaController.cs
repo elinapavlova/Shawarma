@@ -66,18 +66,15 @@ namespace API.Controllers
             return NoContent();
         }
         
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateShawarma(int id, ShawarmaRequestDto shawarmaDto)
+        [HttpPut]
+        public async Task<IActionResult> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            if (id != shawarmaDto.Id) 
-                return BadRequest();
-
-            var shawarma = await _shawarmaService.GetShawarmaById(id);
+            var shawarma = await _shawarmaService.GetShawarmaById(shawarmaDto.Id);
             
             if (shawarma == null) 
                 return NotFound();
             
-            _shawarmaService.UpdateShawarma(id, shawarmaDto);
+            _shawarmaService.UpdateShawarma(shawarmaDto);
             return NoContent();
         }
     }

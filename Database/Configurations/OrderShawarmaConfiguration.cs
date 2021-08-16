@@ -11,15 +11,15 @@ namespace Database.Configurations
         {
             builder.ToTable("OrderShawarma").Property(p => p.Id).IsRequired();
             builder.ToTable("OrderShawarma").Property(p => p.Number).HasDefaultValue(1).IsRequired();
-            
+           
             builder.ToTable("OrderShawarma")
                 .HasOne(p => p.Order)
-                .WithMany(t => t.OrderShawarma)
+                .WithMany(t => t.OrderShawarmas)
                 .HasForeignKey(p => p.OrderId);
             
             builder.ToTable("OrderShawarma")
                 .HasOne(p => p.Shawarma)
-                .WithMany(t => t.OrderShawarma)
+                .WithMany(t => t.OrderShawarmas)
                 .HasForeignKey(p => p.ShawarmaId);
 
         }

@@ -38,12 +38,12 @@ namespace Services
             _repository.CreateShawarma(shawarma);
         }
 
-        public void UpdateShawarma(int id, ShawarmaRequestDto shawarmaDto)
+        public void UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
             if (shawarmaDto.Name == null) return;
             
-            var user = _mapper.Map<Shawarma>(shawarmaDto);
-            _repository.UpdateShawarma(id, user);
+            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
+            _repository.UpdateShawarma(shawarma);
         }
 
         public void DeleteShawarma(int id)

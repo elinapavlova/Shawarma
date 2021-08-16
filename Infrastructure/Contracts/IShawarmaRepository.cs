@@ -10,7 +10,7 @@ namespace Infrastructure.Contracts
 
         void CreateShawarma(Shawarma shawarma);
         
-        void UpdateShawarma(int id, Shawarma shawarma);
+        void UpdateShawarma(Shawarma shawarma);
         
         void DeleteShawarma(int id);
 

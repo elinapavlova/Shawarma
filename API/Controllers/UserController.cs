@@ -13,12 +13,10 @@ namespace API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
 
-        public UserController(IUserService service, IRoleService roleService)
+        public UserController(IUserService service)
         {
             _userService = service;
-            _roleService = roleService;
         }
        
         /// <summary>
@@ -40,10 +38,10 @@ namespace API.Controllers
         /// <response code="200">Returns a user</response>
         /// <response code="404">If the user is not exists</response>
         /// <returns>User</returns>
-        [HttpGet("{id:long}")]
+        [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserResponseDto>> GetUserById(long id)
+        public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
         {
             var user = _userService.GetUserById(id).Result;
             
@@ -67,48 +65,39 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<UserRequestDto>> CreateUser(UserRequestDto userDto)
         {
-            var status = _roleService.GetRoleById(userDto.IdRole).Result;
+            if (userDto == null)  
+                return BadRequest();
 
-            if (status == null) 
-                return NotFound();
-            
             var user = _userService.GetUserById(userDto.Id).Result;
-
-            if (user != null) 
-                return NoContent();
             
+            if (user != null)
+                return NoContent();
+
             _userService.CreateUser(userDto);
             return CreatedAtAction("GetUserById", new {id = userDto.Id}, userDto);
         }
 
-        [HttpDelete("{id:long}")]
-        public async Task<IActionResult> DeleteUser(long id)
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
             var user = _userService.GetUserById(id).Result;
 
-            if (user == null) return NotFound();
+            if (user == null) 
+                return NotFound();
             
             _userService.DeleteUser(id);
             return NoContent();
         }
         
-        [HttpPut("{id:long}")]
-        public async Task<IActionResult> UpdateUser(long id, UserRequestDto userDto)
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UserRequestDto userDto)
         {
-            var status = _roleService.GetRoleById(userDto.IdRole).Result;
-
-            if (status == null) 
-                return NotFound();
-            
-            if (id != userDto.Id) 
-                return BadRequest();
-
-            var user = await _userService.GetUserById(id);
+            var user = await _userService.GetUserById(userDto.Id);
             
             if (user == null) 
                 return NotFound();
             
-            _userService.UpdateUser(id, userDto);
+            _userService.UpdateUser(userDto);
             return NoContent();
         }
     }

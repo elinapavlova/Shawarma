@@ -7,9 +7,9 @@ namespace Services.Contracts
     public interface IUserService
     {
         Task<ICollection<UserResponseDto>> GetUserList();
-        Task<UserResponseDto> GetUserById(long id);
+        Task<UserResponseDto> GetUserById(int id);
         void CreateUser(UserRequestDto user);
-        void UpdateUser(long id, UserRequestDto user);
-        void DeleteUser(long id);
+        void UpdateUser(UserRequestDto user);
+        void DeleteUser(int id);
     }
 }

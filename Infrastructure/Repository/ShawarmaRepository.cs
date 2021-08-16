@@ -27,9 +27,9 @@ namespace Infrastructure.Repository
             await _db.SaveChangesAsync();
         }
 
-        public void UpdateShawarma(int id, Shawarma newShawarma)
+        public void UpdateShawarma(Shawarma newShawarma)
         {
-            var shawarma = _db.Shawarmas.FindAsync(id).Result;
+            var shawarma = _db.Shawarmas.FindAsync(newShawarma.Id).Result;
             
             shawarma.Name = newShawarma.Name;
             shawarma.Cost = newShawarma.Cost;
@@ -49,7 +49,7 @@ namespace Infrastructure.Repository
         public async Task<Shawarma> GetShawarmaById(int id)
         {
             var shawarma = await _db.Shawarmas.FindAsync(id);
-            return shawarma;
+            return shawarma ?? null;
         }
     }
 }

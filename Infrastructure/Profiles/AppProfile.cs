@@ -29,6 +29,8 @@ namespace Infrastructure.Profiles
 
             CreateMap<RoleRequestDto, Role>();
             CreateMap<Role, RoleResponseDto>();
+
+            CreateMap<OrderShawarmaResponseDto, OrderShawarmaRequestDto>();
         }
     }
 }

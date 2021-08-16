@@ -10,14 +10,17 @@ namespace Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _repository;
-        private readonly IRoleRepository _roleRepository;
+        private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
+        private readonly IOrderRepository _orderRepository;
 
-        public UserService(IUserRepository repository, IMapper mapper, IRoleRepository roleRepository)
+        public UserService(IUserRepository repository, IMapper mapper, IRoleService roleService, IOrderRepository 
+            orderRepository)
         {
             _repository = repository;
             _mapper = mapper;
-            _roleRepository = roleRepository;
+            _roleService = roleService;
+            _orderRepository = orderRepository;
         }
         
         public async Task<ICollection<UserResponseDto>> GetUserList()
@@ -26,32 +29,36 @@ namespace Services
             return users;
         }
 
-        public async Task<UserResponseDto> GetUserById(long id)
+        public async Task<UserResponseDto> GetUserById(int id)
         {
             var user = _mapper.Map<UserResponseDto>(await _repository.GetUserById(id));
+
             return user;
         }
 
         public void CreateUser(UserRequestDto userDto)
         {
-            var role = _roleRepository.GetRoleById(userDto.IdRole);
+            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
 
-            if (userDto.Email == null || userDto.UserName == null || userDto.Password == null || role == null)  
+            if (roleOfUser == null) 
                 return;
+            
             var user = _mapper.Map<User>(userDto);
             _repository.CreateUser(user);
         }
 
-        public void UpdateUser(long id, UserRequestDto userDto)
+        public void UpdateUser(UserRequestDto userDto)
         {
-            if (userDto.Email != null && userDto.UserName != null && userDto.Password != null)
-            {
-                var user = _mapper.Map<User>(userDto);
-                 _repository.UpdateUser(id, user);               
-            }
+            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
+
+            if (roleOfUser == null) 
+                return;
+
+            var user = _mapper.Map<User>(userDto);
+            _repository.UpdateUser(user);
         }
 
-        public void DeleteUser(long id)
+        public void DeleteUser(int id)
         {
             _repository.DeleteUser(id);
         }

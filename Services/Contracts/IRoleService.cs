@@ -9,7 +9,7 @@ namespace Services.Contracts
         Task<ICollection<RoleResponseDto>> GetRoleList();
         Task<RoleResponseDto> GetRoleById(int id);
         void CreateRole(RoleRequestDto role);
-        void UpdateRole(int id, RoleRequestDto role);
+        void UpdateRole(RoleRequestDto role);
         void DeleteRole(int id);
     }
 }

@@ -55,8 +55,6 @@ namespace API.Controllers
         /// <param name="roleDto"></param>
         /// /// <response code="201">Returns the newly created role</response>
         /// <response code="400">If the role is null</response>
-        /// <response code="500">If something is wrong</response>
-        /// <response code="500">If role with this Id exists</response>
         /// <returns>A newly created role</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -83,16 +81,14 @@ namespace API.Controllers
             return NoContent();
         }
         
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateRole(int id, RoleRequestDto roleDto)
+        [HttpPut]
+        public async Task<IActionResult> UpdateRole(RoleRequestDto roleDto)
         {
-            if (id != roleDto.Id) return BadRequest();
-
-            var role = await _roleService.GetRoleById(id);
+            var role = await _roleService.GetRoleById(roleDto.Id);
             
             if (role == null) return NotFound();
             
-            _roleService.UpdateRole(id, roleDto);
+            _roleService.UpdateRole(roleDto);
             return NoContent();
         }
     }

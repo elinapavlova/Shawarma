@@ -10,7 +10,7 @@ namespace Infrastructure.Contracts
 
         void CreateRole(Role role);
         
-        void UpdateRole(int id, Role role);
+        void UpdateRole(Role role);
         
         void DeleteRole(int id);
 

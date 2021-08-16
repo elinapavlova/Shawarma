@@ -29,9 +29,9 @@ namespace Infrastructure.Repository
             await _db.SaveChangesAsync();
         }
 
-        public void UpdateRole(int id, Role newRole)
+        public void UpdateRole(Role newRole)
         {
-            var role = _db.Roles.FindAsync(id).Result;
+            var role = _db.Roles.FindAsync(newRole.Id).Result;
             
             role.Name = newRole.Name;
             
@@ -49,7 +49,7 @@ namespace Infrastructure.Repository
         public async Task<Role> GetRoleById(int id)
         {
             var role = await _db.Roles.FindAsync(id);
-            return role; 
+            return role ?? null; 
         }
     }
 }

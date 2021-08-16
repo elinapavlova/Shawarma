@@ -8,7 +8,5 @@ namespace Models.Shawarma
         public string Name { get; set; }
         public decimal Cost { get; set; }
         public bool IsActual { get; set; }
-        
-        //public List<OrderShawarma.OrderShawarmaRequestDto> OrderShawarma { get; set; }
     }
 }

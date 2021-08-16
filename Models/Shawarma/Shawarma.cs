@@ -9,6 +9,6 @@ namespace Models.Shawarma
         public decimal Cost { get; set; }
         public bool IsActual { get; set; }
         
-        public List<OrderShawarma.OrderShawarma> OrderShawarma { get; set; }
+        public List<OrderShawarma.OrderShawarma> OrderShawarmas { get; set; }
     }
 }

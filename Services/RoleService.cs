@@ -38,13 +38,13 @@ namespace Services
             _repository.CreateRole(role);
         }
 
-        public void UpdateRole(int id, RoleRequestDto roleDto)
+        public void UpdateRole(RoleRequestDto roleDto)
         {
             if (roleDto.Name == null) 
                 return;
             
             var role = _mapper.Map<Role>(roleDto);
-            _repository.UpdateRole(id, role);
+            _repository.UpdateRole(role);
         }
 
         public void DeleteRole(int id)

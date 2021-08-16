@@ -2,8 +2,8 @@
 {
     public class OrderShawarma
     {
-        public long Id { get; set; }
-        public long OrderId { get; set; }
+        public int Id { get; set; }
+        public int OrderId { get; set; }
         public int ShawarmaId { get; set; }
         public int Number { get; set; }
         

@@ -9,12 +9,12 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Status>> GetStatusList();
 
-        void Create(Status status);
+        void CreateStatus(Status status);
         
-        void Update(Status status);
+        void UpdateStatus(Status status);
         
-        void Delete(Status status);
+        void DeleteStatus(int id);
 
-        void GetStatusById(int id);
+        Task<Status> GetStatusById(int id);
     }
 }

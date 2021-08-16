@@ -10,10 +10,10 @@ namespace Infrastructure.Contracts
 
         void CreateUser(User user);
 
-        void UpdateUser(long id, User user);
+        void UpdateUser(User user);
         
-        void DeleteUser(long id);
+        void DeleteUser(int id);
 
-        Task<User> GetUserById(long id);
+        Task<User> GetUserById(int id);
     }
 }

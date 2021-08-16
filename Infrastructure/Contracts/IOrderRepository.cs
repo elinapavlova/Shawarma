@@ -9,12 +9,12 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Order>> GetOrderList();
 
-        void Create(Order order);
+        void CreateOrder(Order order);
         
-        void Update(Order order);
+        void UpdateOrder(Order order);
         
-        void Delete(Order order);
+        void DeleteOrder(int id);
 
-        void GetStatusById(long id);
+        Task<Order> GetOrderById(int id);
     }
 }

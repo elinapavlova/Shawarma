@@ -9,7 +9,7 @@ namespace Services.Contracts
         Task<ICollection<ShawarmaResponseDto>> GetShawarmaList();
         Task<ShawarmaResponseDto> GetShawarmaById(int id);
         void CreateShawarma(ShawarmaRequestDto shawarma);
-        void UpdateShawarma(int id, ShawarmaRequestDto shawarma);
+        void UpdateShawarma(ShawarmaRequestDto shawarma);
         void DeleteShawarma(int id);
     }
 }

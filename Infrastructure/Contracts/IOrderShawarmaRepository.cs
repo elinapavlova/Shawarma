@@ -8,12 +8,12 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<OrderShawarma>> GetOrderShawarmaList();
 
-        void Create(OrderShawarma orderShawarma);
+        void CreateOrderShawarma(OrderShawarma orderShawarma);
         
-        void Update(OrderShawarma orderShawarma);
+        void UpdateOrderShawarma(OrderShawarma orderShawarma);
         
-        void Delete(OrderShawarma orderShawarma);
+        void DeleteOrderShawarma(int id);
 
-        void GetOrderShawarmaById(long Orderid);
+        Task<OrderShawarma> GetOrderShawarmaById(int id);
     }
 }
