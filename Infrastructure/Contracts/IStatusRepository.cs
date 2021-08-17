@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Models.Order;
 using Models.Status;
 
 namespace Infrastructure.Contracts

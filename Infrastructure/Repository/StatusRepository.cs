@@ -48,7 +48,7 @@ namespace Infrastructure.Repository
         public async Task<Status> GetStatusById(int id)
         {
             var status = await _db.Statuses.FindAsync(id);
-            return status ?? null;
+            return status;
         }
     }
 }

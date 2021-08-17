@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
-using Models.Order;
 using Models.OrderShawarma;
 using Services.Contracts;
 
@@ -43,7 +42,6 @@ namespace Services
         {
             var orderShawa = _mapper.Map<OrderShawarma>(orderShawaDto);
             var orderShawas = GetOrderShawarmaList().Result;
-            var shawarma = _shawarmaService.GetShawarmaById(orderShawaDto.ShawarmaId).Result;
 
             foreach (var os in orderShawas)
             {
@@ -72,9 +70,9 @@ namespace Services
             _repository.UpdateOrderShawarma(orderShawa);
         }
 
-        public async void DeleteOrderShawarma(int id)
+        public void DeleteOrderShawarma(int id)
         {
-            _repository.DeleteOrderShawarma(id);
+             _repository.DeleteOrderShawarma(id);
         }
     }
 }

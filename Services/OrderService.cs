@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
@@ -61,7 +60,7 @@ namespace Services
         {
             var order = GetOrderById(id).Result;
 
-            if (order.OrderShawarmas != null) 
+            if (order.OrderShawarmas.Count != 0) 
                 return;
             _repository.DeleteOrder(id);
         }

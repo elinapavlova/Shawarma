@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Models.User;
-
+﻿
 namespace Models.Role
 {
     public class RoleRequestDto

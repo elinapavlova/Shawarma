@@ -28,14 +28,14 @@ namespace API.Controllers
         public async Task<ICollection<RoleResponseDto>> GetRoleList()
         {
             var roles = _roleService.GetRoleList().Result;
-            return roles;
+            return await Task.FromResult(roles);
         }
 
         /// <summary>
         /// Gets role by id
         /// </summary>
-        /// <response code="200">Returns a role</response>
-        /// <response code="404">If the role is not exists</response>
+        /// <response code="200">Returns the role</response>
+        /// <response code="404">If the role does not exists</response>
         /// <returns>role</returns>
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -46,7 +46,7 @@ namespace API.Controllers
             
             if (role == null) return NotFound();
             
-            return role;
+            return await Task.FromResult<ActionResult<RoleResponseDto>>(role);
         }
 
         /// <summary>
@@ -67,10 +67,20 @@ namespace API.Controllers
             if (role != null) return NoContent();
             
              _roleService.CreateRole(roleDto);
-            return CreatedAtAction("GetRoleById", new {id = roleDto.Id}, roleDto);
+            return await Task.FromResult<ActionResult<RoleRequestDto>>
+                (CreatedAtAction("GetRoleById", new {id = roleDto.Id}, roleDto));
         }
 
+        /// <summary>
+        /// Delete the role
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <response code="204">If the role was deleted successfully</response>
+        /// <response code="404">If the role does not exists</response>
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteRole(int id)
         {
             var role = _roleService.GetRoleById(id).Result;
@@ -81,6 +91,16 @@ namespace API.Controllers
             return NoContent();
         }
         
+        /// <summary>
+        /// Update the role
+        /// </summary>
+        /// <response code="204">If the role was updated successfully</response>
+        /// <response code="400">If the role is null</response>
+        /// <response code="404">If the role does not exists</response>
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut]
         public async Task<IActionResult> UpdateRole(RoleRequestDto roleDto)
         {

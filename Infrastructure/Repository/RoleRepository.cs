@@ -49,7 +49,7 @@ namespace Infrastructure.Repository
         public async Task<Role> GetRoleById(int id)
         {
             var role = await _db.Roles.FindAsync(id);
-            return role ?? null; 
+            return role; 
         }
     }
 }

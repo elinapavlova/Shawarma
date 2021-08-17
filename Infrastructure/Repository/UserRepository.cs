@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Models.Order;
 using Models.User;
 
 namespace Infrastructure.Repository
@@ -20,10 +21,19 @@ namespace Infrastructure.Repository
         public async Task<ICollection<User>> GetUserList()
         {
             var users = await _db.Users.ToListAsync();
-
+            List<Order> orders = null;
             foreach (var user in users)
             {
-                var orders = await _db.Orders.Where(o => o.IdUser == user.Id).ToListAsync();
+                orders = await _db.Orders.Where(o => o.IdUser == user.Id).ToListAsync();
+                
+                if (orders != null) 
+                    foreach (var order in orders) 
+                    { 
+                        var orderShawas
+                         = await _db.OrderShawarmas.Where(o => o.OrderId == order.Id).ToListAsync(); 
+                        order.OrderShawarmas = orderShawas; 
+                    }
+                
                 user.Orders = orders;
             }
             
@@ -70,9 +80,15 @@ namespace Infrastructure.Repository
             if (ordersOfUser.Count == 0)
                 return user;
             
+            foreach (var order in orders)
+            {
+                var orderShawas
+                    = await _db.OrderShawarmas.Where(o => o.OrderId == order.Id).ToListAsync();
+                order.OrderShawarmas = orderShawas;
+            }
+            
             user.Orders = ordersOfUser;
             return user;
-            
         }
     }
 }

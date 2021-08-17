@@ -48,7 +48,7 @@ namespace Infrastructure.Repository
         public async Task<OrderShawarma> GetOrderShawarmaById(int id)
         {
             var orderShawa = await _db.OrderShawarmas.FindAsync(id);
-            return orderShawa ?? null;
+            return orderShawa;
         }
     }
 }

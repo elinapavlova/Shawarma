@@ -12,15 +12,12 @@ namespace Services
         private readonly IUserRepository _repository;
         private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
-        private readonly IOrderRepository _orderRepository;
 
-        public UserService(IUserRepository repository, IMapper mapper, IRoleService roleService, IOrderRepository 
-            orderRepository)
+        public UserService(IUserRepository repository, IMapper mapper, IRoleService roleService)
         {
             _repository = repository;
             _mapper = mapper;
             _roleService = roleService;
-            _orderRepository = orderRepository;
         }
         
         public async Task<ICollection<UserResponseDto>> GetUserList()

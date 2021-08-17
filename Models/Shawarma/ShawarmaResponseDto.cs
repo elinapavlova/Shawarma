@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Models.Shawarma
 {
     public class ShawarmaResponseDto

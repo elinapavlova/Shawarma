@@ -49,7 +49,7 @@ namespace Infrastructure.Repository
         public async Task<Shawarma> GetShawarmaById(int id)
         {
             var shawarma = await _db.Shawarmas.FindAsync(id);
-            return shawarma ?? null;
+            return shawarma;
         }
     }
 }
