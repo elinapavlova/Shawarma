@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.OrderShawarma;
@@ -9,17 +10,12 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderShawarmaController : ControllerBase
+    public class OrderShawarmaController : BaseController
     {
-        private readonly IOrderService _orderService;
-        private readonly IShawarmaService _shawarmaService;
         private readonly IOrderShawarmaService _orderShawarmaService;
 
-        public OrderShawarmaController(IOrderService orderService, IShawarmaService shawarmaService,
-            IOrderShawarmaService orderShawarmaService)
+        public OrderShawarmaController(IOrderShawarmaService orderShawarmaService)
         {
-            _orderService = orderService;
-            _shawarmaService = shawarmaService;
             _orderShawarmaService = orderShawarmaService;
         }
         
@@ -28,10 +24,11 @@ namespace API.Controllers
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet]
-        public async Task<ICollection<OrderShawarmaResponseDto>> GetOrderShawarmaList()
+        public async Task<ActionResult<ResultContainer<ICollection<OrderShawarmaResponseDto>>>> GetOrderShawarmaList()
         {
-            var orderShawas = _orderShawarmaService.GetOrderShawarmaList().Result;
-            return await Task.FromResult(orderShawas);
+            return await ReturnResult<ResultContainer<ICollection<OrderShawarmaResponseDto>>, 
+                    ICollection<OrderShawarmaResponseDto>>
+                (_orderShawarmaService.GetOrderShawarmaList());
         }
         
         /// <summary>
@@ -40,11 +37,10 @@ namespace API.Controllers
         /// <response code="200">Returns shawarmas from order</response>
         /// <response code="404">If the order or type of shawarmas does not exists</response>
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<OrderShawarmaResponseDto>> GetOrderShawarmaById(int id)
+        public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> GetOrderShawarmaById(int id)
         {
-            var orderShawa = _orderShawarmaService.GetOrderShawarmaById(id).Result;
-
-            return orderShawa == null ? NotFound() : await Task.FromResult(orderShawa);
+            return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
+                (_orderShawarmaService.GetOrderShawarmaById(id));
         }
         
         /// <summary>
@@ -58,21 +54,11 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<OrderShawarmaRequestDto>> CreateOrderShawarma
+        public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> CreateOrderShawarma
             (OrderShawarmaRequestDto orderShawaDto)
         {
-            var order = _orderService.GetOrderById(orderShawaDto.OrderId).Result;
-            var shawarma = _shawarmaService.GetShawarmaById(orderShawaDto.ShawarmaId).Result;
-
-            if (order == null || shawarma == null) 
-                return BadRequest();
-
-            if (!shawarma.IsActual)
-                return NoContent();
-
-            _orderShawarmaService.CreateOrderShawarma(orderShawaDto);
-            return await Task.FromResult<ActionResult<OrderShawarmaRequestDto>>
-                (CreatedAtAction("GetOrderShawarmaById", new {id = orderShawaDto.Id}, orderShawaDto));
+            return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
+                (_orderShawarmaService.CreateOrderShawarma(orderShawaDto));
         }
         
         /// <summary>
@@ -84,34 +70,27 @@ namespace API.Controllers
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteOrderShawarma(int id)
+        public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> DeleteOrderShawarma(int id)
         {
-            var orderShawa = _orderShawarmaService.GetOrderShawarmaById(id).Result;
-
-            if (orderShawa == null) 
-                return NotFound();
-            
-            _orderShawarmaService.DeleteOrderShawarma(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
+                (_orderShawarmaService.DeleteOrderShawarma(id));
         }
         
         /// <summary>
         /// Update shawarmas from order
         /// </summary>
         /// <response code="204">If shawarmas from order was updated successfully</response>
+        /// <response code="400">If the type of shawarma is not actual</response>
         /// <response code="404">If shawarmas from order does not exists</response>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateOrderShawarma(OrderShawarmaRequestDto orderShawaDto)
+        public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> 
+            UpdateOrderShawarma(OrderShawarmaRequestDto orderShawaDto)
         {
-            var orderShawa = _orderShawarmaService.GetOrderShawarmaById(orderShawaDto.Id).Result;
-            
-            if (orderShawa == null) 
-                return NotFound();
-            
-            _orderShawarmaService.UpdateOrderShawarma(orderShawaDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
+                (_orderShawarmaService.UpdateOrderShawarma(orderShawaDto));
         }
     }
 }

@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Models.Status;
 
 namespace Services.Contracts
 {
     public interface IStatusService
     {
-        Task<ICollection<StatusResponseDto>> GetStatusList();
-        Task<StatusResponseDto> GetStatusById(int id);
-        void CreateStatus(StatusRequestDto status);
-        void UpdateStatus(StatusRequestDto status);
-        void DeleteStatus(int id);
+        Task<ResultContainer<ICollection<StatusResponseDto>>> GetStatusList();
+        Task<ResultContainer<StatusResponseDto>> GetStatusById(int id);
+        Task<ResultContainer<StatusResponseDto>> CreateStatus(StatusRequestDto status);
+        Task<ResultContainer<StatusResponseDto>> UpdateStatus(StatusRequestDto status);
+        Task<ResultContainer<StatusResponseDto>> DeleteStatus(int id);
     }
 }

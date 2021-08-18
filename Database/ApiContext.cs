@@ -1,5 +1,4 @@
-﻿
-using Database.Configurations;
+﻿using Database.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Models.Order;
 using Models.OrderShawarma;

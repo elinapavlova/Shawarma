@@ -22,27 +22,33 @@ namespace Infrastructure.Repository
             return statuses;
         }
 
-        public async void CreateStatus(Status status)
+        public async Task<Status> CreateStatus(Status status)
         {
             await _db.Statuses.AddAsync(status);
             await _db.SaveChangesAsync();
+
+            return status;
         }
 
-        public void UpdateStatus(Status newStatus)
+        public async Task<Status> UpdateStatus(Status newStatus)
         {
-            var status = _db.Statuses.FindAsync(newStatus.Id).Result;
+            var status = await _db.Statuses.FindAsync(newStatus.Id);
             
             status.Name = newStatus.Name;
 
             _db.Statuses.Update(status);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return status;
         }
 
-        public async void DeleteStatus(int id)
+        public async Task<Status> DeleteStatus(int id)
         {
-            var status = _db.Statuses.FindAsync(id).Result;
+            var status = await _db.Statuses.FindAsync(id);
             _db.Statuses.Remove(status);
             await _db.SaveChangesAsync();
+
+            return status;
         }
 
         public async Task<Status> GetStatusById(int id)

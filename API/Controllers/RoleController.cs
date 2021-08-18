@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Role;
@@ -9,7 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RoleController : ControllerBase
+    public class RoleController : BaseController
     {
         private readonly IRoleService _roleService;
 
@@ -25,10 +26,10 @@ namespace API.Controllers
         /// <returns>Collection of roles</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ICollection<RoleResponseDto>> GetRoleList()
+        public async Task<ActionResult<ResultContainer<ICollection<RoleResponseDto>>>> GetRoleList()
         {
-            var roles = _roleService.GetRoleList().Result;
-            return await Task.FromResult(roles);
+            return await ReturnResult<ResultContainer<ICollection<RoleResponseDto>>, ICollection<RoleResponseDto>>
+                (_roleService.GetRoleList());
         }
 
         /// <summary>
@@ -42,11 +43,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RoleResponseDto>> GetRoleById(int id)
         {
-            var role = _roleService.GetRoleById(id).Result;
-            
-            if (role == null) return NotFound();
-            
-            return await Task.FromResult<ActionResult<RoleResponseDto>>(role);
+            return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
+                (_roleService.GetRoleById(id));
         }
 
         /// <summary>
@@ -62,13 +60,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<RoleRequestDto>> CreateRole(RoleRequestDto roleDto)
         {
-            var role = _roleService.GetRoleById(roleDto.Id).Result;
-
-            if (role != null) return NoContent();
-            
-             _roleService.CreateRole(roleDto);
-            return await Task.FromResult<ActionResult<RoleRequestDto>>
-                (CreatedAtAction("GetRoleById", new {id = roleDto.Id}, roleDto));
+            return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
+                (_roleService.CreateRole(roleDto));
         }
 
         /// <summary>
@@ -83,12 +76,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteRole(int id)
         {
-            var role = _roleService.GetRoleById(id).Result;
-
-            if (role == null) return NotFound();
-            
-            _roleService.DeleteRole(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
+                (_roleService.DeleteRole(id));
         }
         
         /// <summary>
@@ -104,12 +93,8 @@ namespace API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateRole(RoleRequestDto roleDto)
         {
-            var role = await _roleService.GetRoleById(roleDto.Id);
-            
-            if (role == null) return NotFound();
-            
-            _roleService.UpdateRole(roleDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
+                (_roleService.UpdateRole(roleDto));
         }
     }
 }

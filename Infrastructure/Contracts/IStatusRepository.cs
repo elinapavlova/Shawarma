@@ -8,11 +8,11 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Status>> GetStatusList();
 
-        void CreateStatus(Status status);
+        Task<Status> CreateStatus(Status status);
         
-        void UpdateStatus(Status status);
+        Task<Status> UpdateStatus(Status status);
         
-        void DeleteStatus(int id);
+        Task<Status> DeleteStatus(int id);
 
         Task<Status> GetStatusById(int id);
     }

@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.User;
@@ -10,15 +11,13 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
-        
-        public UserController(IUserService service, IRoleService roleService)
+
+        public UserController(IUserService service)
         {
             _userService = service;
-            _roleService = roleService;
         }
        
         /// <summary>
@@ -27,10 +26,10 @@ namespace API.Controllers
         /// <response code="200">Returns all users</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ICollection<UserResponseDto>> GetUserList()
+        public async Task<ActionResult<ResultContainer<ICollection<UserResponseDto>>>> GetUserList()
         {
-            var users = _userService.GetUserList().Result;
-            return await Task.FromResult(users);
+            return await ReturnResult<ResultContainer<ICollection<UserResponseDto>>, ICollection<UserResponseDto>>
+                (_userService.GetUserList());
         }
 
         /// <summary>
@@ -43,11 +42,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
         {
-            var user = _userService.GetUserById(id).Result;
-            
-            if (user == null) return NotFound();
-            
-            return await Task.FromResult<ActionResult<UserResponseDto>>(user);
+            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
+                (_userService.GetUserById(id));
         }
 
         /// <summary>
@@ -63,18 +59,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<UserRequestDto>> CreateUser(UserRequestDto userDto)
         {
-            var user = _userService.GetUserById(userDto.Id).Result;
-            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
-            
-            if (user != null)
-                return NoContent();            
-            
-            if (roleOfUser == null)  
-                return BadRequest();
-            
-            _userService.CreateUser(userDto);
-            return await Task.FromResult<ActionResult<UserRequestDto>>
-                (CreatedAtAction("GetUserById", new {id = userDto.Id}, userDto));
+            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
+                (_userService.CreateUser(userDto));
         }
 
         /// <summary>
@@ -88,13 +74,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = _userService.GetUserById(id).Result;
-
-            if (user == null) 
-                return NotFound();
-            
-            _userService.DeleteUser(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
+                (_userService.DeleteUser(id));
         }
         
         /// <summary>
@@ -109,17 +90,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateUser(UserRequestDto userDto)
         {
-            var user = await _userService.GetUserById(userDto.Id);
-            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
-
-            if (user == null) 
-                return NotFound();
-            
-            if (roleOfUser == null)  
-                return BadRequest();
-            
-            _userService.UpdateUser(userDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
+                (_userService.UpdateUser(userDto));
         }
     }
 }

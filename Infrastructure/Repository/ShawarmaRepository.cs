@@ -21,29 +21,35 @@ namespace Infrastructure.Repository
             return shawarmas; 
         }
 
-        public async void CreateShawarma(Shawarma shawarma)
+        public async Task<Shawarma> CreateShawarma(Shawarma shawarma)
         {
             await _db.Shawarmas.AddAsync(shawarma);
             await _db.SaveChangesAsync();
+
+            return shawarma;
         }
 
-        public void UpdateShawarma(Shawarma newShawarma)
+        public async Task<Shawarma> UpdateShawarma(Shawarma newShawarma)
         {
-            var shawarma = _db.Shawarmas.FindAsync(newShawarma.Id).Result;
+            var shawarma = await _db.Shawarmas.FindAsync(newShawarma.Id);
             
             shawarma.Name = newShawarma.Name;
             shawarma.Cost = newShawarma.Cost;
             shawarma.IsActual = newShawarma.IsActual;
 
             _db.Shawarmas.Update(shawarma);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return shawarma;
         }
 
-        public async void DeleteShawarma(int id)
+        public async Task<Shawarma> DeleteShawarma(int id)
         {
-            var shawarma = _db.Shawarmas.FindAsync(id).Result;
+            var shawarma = await _db.Shawarmas.FindAsync(id);
             _db.Shawarmas.Remove(shawarma);
             await _db.SaveChangesAsync();
+
+            return shawarma;
         }
 
         public async Task<Shawarma> GetShawarmaById(int id)

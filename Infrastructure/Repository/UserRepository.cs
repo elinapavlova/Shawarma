@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Models.Order;
 using Models.User;
 
 namespace Infrastructure.Repository
@@ -12,43 +11,43 @@ namespace Infrastructure.Repository
     public class UserRepository : IUserRepository
     {
         private readonly ApiContext _db;
+        private readonly IOrderRepository _orderRepository;
 
-        public UserRepository(ApiContext context)
+        public UserRepository(ApiContext context, IOrderRepository orderRepository)
         {
             _db = context;
+            _orderRepository = orderRepository;
         }
 
         public async Task<ICollection<User>> GetUserList()
         {
             var users = await _db.Users.ToListAsync();
-            List<Order> orders = null;
+            
+            var orders = await _orderRepository.GetOrderList();
+            
+            if (orders.Count == 0)
+                return users;
+            
             foreach (var user in users)
             {
-                orders = await _db.Orders.Where(o => o.IdUser == user.Id).ToListAsync();
-                
-                if (orders != null) 
-                    foreach (var order in orders) 
-                    { 
-                        var orderShawas
-                         = await _db.OrderShawarmas.Where(o => o.OrderId == order.Id).ToListAsync(); 
-                        order.OrderShawarmas = orderShawas; 
-                    }
-                
-                user.Orders = orders;
+                var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
+                user.Orders = ordersOfUser;
             }
             
             return users; 
         }
         
-        public async void CreateUser(User user)
+        public async Task<User> CreateUser(User user)
         {
             await _db.Users.AddAsync(user);
             await _db.SaveChangesAsync();
+
+            return user;
         }
 
-        public void UpdateUser(User newUser)
+        public async Task<User> UpdateUser(User newUser)
         {
-            var user = _db.Users.FindAsync(newUser.Id).Result;
+            var user = await _db.Users.FindAsync(newUser.Id);
             
             user.Email = newUser.Email;
             user.Password = newUser.Password;
@@ -56,14 +55,18 @@ namespace Infrastructure.Repository
             user.IdRole = newUser.IdRole;
 
             _db.Users.Update(user);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return user;
         }
 
-        public async void DeleteUser(int id)
+        public async Task<User> DeleteUser(int id)
         {
-            var user = _db.Users.FindAsync(id).Result;
+            var user = await _db.Users.FindAsync(id);
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
+
+            return user;
         }
 
         public async Task<User> GetUserById(int id)
@@ -72,21 +75,12 @@ namespace Infrastructure.Repository
             if (user == null) 
                 return null;
             
-            var orders = await _db.Orders.ToListAsync();
+            var orders = await _orderRepository.GetOrderList();
             if (orders.Count == 0)
                 return user;
             
-            var ordersOfUser = await _db.Orders.Where(o => o.IdUser == user.Id).ToListAsync();
-            if (ordersOfUser.Count == 0)
-                return user;
-            
-            foreach (var order in orders)
-            {
-                var orderShawas
-                    = await _db.OrderShawarmas.Where(o => o.OrderId == order.Id).ToListAsync();
-                order.OrderShawarmas = orderShawas;
-            }
-            
+            var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
+
             user.Orders = ordersOfUser;
             return user;
         }

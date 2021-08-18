@@ -8,11 +8,11 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Order>> GetOrderList();
 
-        void CreateOrder(Order order);
+        Task<Order> CreateOrder(Order order);
         
-        void UpdateOrder(Order order);
+        Task<Order> UpdateOrder(Order order);
         
-        void DeleteOrder(int id);
+        Task<Order> DeleteOrder(int id);
 
         Task<Order> GetOrderById(int id);
     }

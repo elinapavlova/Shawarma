@@ -22,27 +22,33 @@ namespace Infrastructure.Repository
             return ordershawas;
         }
 
-        public async void CreateOrderShawarma(OrderShawarma orderShawarma)
+        public async Task<OrderShawarma> CreateOrderShawarma(OrderShawarma orderShawarma)
         {
             await _db.OrderShawarmas.AddAsync(orderShawarma);
             await _db.SaveChangesAsync();
+
+            return orderShawarma;
         }
 
-        public void UpdateOrderShawarma(OrderShawarma newOrderShawa)
+        public async Task<OrderShawarma> UpdateOrderShawarma(OrderShawarma newOrderShawa)
         {
-            var orderShawa = _db.OrderShawarmas.FindAsync(newOrderShawa.Id).Result;
+            var orderShawa = await _db.OrderShawarmas.FindAsync(newOrderShawa.Id);
             
             orderShawa.Number = newOrderShawa.Number;
 
             _db.OrderShawarmas.Update(orderShawa);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return orderShawa;
         }
 
-        public void DeleteOrderShawarma(int id)
+        public async Task<OrderShawarma> DeleteOrderShawarma(int id)
         {
-            var orderShawa = _db.OrderShawarmas.FindAsync(id).Result;
+            var orderShawa = await _db.OrderShawarmas.FindAsync(id);
             _db.OrderShawarmas.Remove(orderShawa);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return orderShawa;
         }
 
         public async Task<OrderShawarma> GetOrderShawarmaById(int id)

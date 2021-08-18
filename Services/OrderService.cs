@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
+using Infrastructure.Error;
+using Infrastructure.Result;
 using Models.Order;
 using Services.Contracts;
 
@@ -12,7 +14,6 @@ namespace Services
         private readonly IOrderRepository _repository;
         private readonly IUserService _userService;
         private readonly IStatusService _statusService;
-        
         private readonly IMapper _mapper;
         
         public OrderService(IOrderRepository repository, IMapper mapper, IUserService userService,
@@ -24,45 +25,75 @@ namespace Services
             _mapper = mapper;
         }
         
-        public async Task<ICollection<OrderResponseDto>> GetOrderList()
+        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetOrderList()
         {
-            var orders = _mapper.Map<ICollection<OrderResponseDto>>(await _repository.GetOrderList());
+            var orders = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>(await _repository.GetOrderList());
             return orders;
         }
 
-        public async Task<OrderResponseDto> GetOrderById(int id)
+        public async Task<ResultContainer<OrderResponseDto>> GetOrderById(int id)
         {
-            var order = _mapper.Map<OrderResponseDto>(await _repository.GetOrderById(id));
-            return order;
+            ResultContainer<OrderResponseDto> result = new ResultContainer<OrderResponseDto>();
+            var getOrder = await _repository.GetOrderById(id);
+
+            if (getOrder == null)
+            {
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
+
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.GetOrderById(id));
+            return result;
         }
 
-        public void CreateOrder(OrderRequestDto orderDto)
+        public async Task<ResultContainer<OrderResponseDto>> CreateOrder(OrderRequestDto orderDto)
         {
-            //    if (orderDto.Date.Hour is > 12 or < 9) return;
+            //    if (orderDto.Date.Hour is > 12 or < 9) return null;
+            var user = await _userService.GetUserById(orderDto.IdUser);
+            var status = await _statusService.GetStatusById(orderDto.IdStatus);
+            var getOrder = await GetOrderById(orderDto.Id);
+
+            if (getOrder.Data != null || user.Data == null || status.Data == null)
+            {
+                getOrder.ErrorType = ErrorType.BadRequest;
+                return getOrder;
+            }
+
+            var newOrder = _mapper.Map<Order>(orderDto);
+            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
+
+            return result;
+        }
+
+        public async Task<ResultContainer<OrderResponseDto>> UpdateOrder(OrderRequestDto orderDto)
+        {
+            var user = await _userService.GetUserById(orderDto.IdUser);
+            var status = await _statusService.GetStatusById(orderDto.IdStatus);
+            var getOrder = await GetOrderById(orderDto.Id);
+
+            if (user.Data == null || status.Data == null || getOrder.Data == null)
+            {
+                getOrder.ErrorType = ErrorType.NotFound;
+                return getOrder;
+            }
+
+            var newOrder = _mapper.Map<Order>(orderDto);
+            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.UpdateOrder(newOrder));
             
-            var order = _mapper.Map<Order>(orderDto);
-            _repository.CreateOrder(order);
+            return result;
         }
 
-        public void UpdateOrder(OrderRequestDto orderDto)
+        public async Task<ResultContainer<OrderResponseDto>> DeleteOrder(int id)
         {
-            var user = _userService.GetUserById(orderDto.IdUser).Result;
-            var status = _statusService.GetStatusById(orderDto.IdStatus).Result;
+            var getOrder = await GetOrderById(id);
 
-            if (user == null || status == null)  
-                return;
-            
-            var order = _mapper.Map<Order>(orderDto);
-            _repository.UpdateOrder(order);
-        }
+            if (getOrder.Data == null)
+                return getOrder;
 
-        public void DeleteOrder(int id)
-        {
-            var order = GetOrderById(id).Result;
+            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.DeleteOrder(id));
+            result.Data = null;
 
-            if (order.OrderShawarmas.Count != 0) 
-                return;
-            _repository.DeleteOrder(id);
+            return result;
         }
     }
 }

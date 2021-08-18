@@ -8,11 +8,11 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<User>> GetUserList();
 
-        void CreateUser(User user);
+        Task<User> CreateUser(User user);
 
-        void UpdateUser(User user);
+        Task<User> UpdateUser(User user);
         
-        void DeleteUser(int id);
+        Task<User> DeleteUser(int id);
 
         Task<User> GetUserById(int id);
     }

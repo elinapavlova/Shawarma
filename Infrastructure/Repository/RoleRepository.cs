@@ -23,27 +23,33 @@ namespace Infrastructure.Repository
             return roles; 
         }
         
-        public async void CreateRole(Role role)
+        public async Task<Role> CreateRole(Role role)
         {
             await _db.Roles.AddAsync(role);
             await _db.SaveChangesAsync();
+
+            return role;
         }
 
-        public void UpdateRole(Role newRole)
+        public async Task<Role> UpdateRole(Role newRole)
         {
-            var role = _db.Roles.FindAsync(newRole.Id).Result;
+            var role = await _db.Roles.FindAsync(newRole.Id);
             
             role.Name = newRole.Name;
             
             _db.Roles.Update(role);
-            _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            return role;
         }
 
-        public async void DeleteRole(int id)
+        public async Task<Role> DeleteRole(int id)
         {
-            var role = _db.Roles.FindAsync(id).Result;
+            var role = await _db.Roles.FindAsync(id);
             _db.Roles.Remove(role);
             await _db.SaveChangesAsync();
+
+            return role;
         }
 
         public async Task<Role> GetRoleById(int id)

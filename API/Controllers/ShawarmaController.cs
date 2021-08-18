@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Shawarma;
@@ -9,7 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ShawarmaController : ControllerBase
+    public class ShawarmaController : BaseController
     {
         private readonly IShawarmaService _shawarmaService;
 
@@ -24,10 +25,10 @@ namespace API.Controllers
         /// <response code="200">Returns all shawarmas</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ICollection<ShawarmaResponseDto>> GetShawarmaList()
+        public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList()
         {
-            var shawarmas = _shawarmaService.GetShawarmaList().Result;
-            return await Task.FromResult(shawarmas);
+            return await ReturnResult<ResultContainer<ICollection<ShawarmaResponseDto>>, 
+                    ICollection<ShawarmaResponseDto>>(_shawarmaService.GetShawarmaList());
         }
         
         /// <summary>
@@ -38,14 +39,10 @@ namespace API.Controllers
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ShawarmaResponseDto>> GetShawarmaById(int id)
+        public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> GetShawarmaById(int id)
         {
-            var shawarma = _shawarmaService.GetShawarmaById(id).Result;
-            
-            if (shawarma == null) 
-                return NotFound();
-            
-            return await Task.FromResult<ActionResult<ShawarmaResponseDto>>(shawarma);
+            return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
+                (_shawarmaService.GetShawarmaById(id));
         }
         
         /// <summary>
@@ -59,16 +56,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<ShawarmaRequestDto>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
+        public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            var shawarma = _shawarmaService.GetShawarmaById(shawarmaDto.Id).Result;
-
-            if (shawarma != null) 
-                return NoContent();
-            
-            _shawarmaService.CreateShawarma(shawarmaDto);
-            return await Task.FromResult<ActionResult<ShawarmaRequestDto>>
-                (CreatedAtAction("GetShawarmaById", new {id = shawarmaDto.Id}, shawarmaDto));
+            return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
+                (_shawarmaService.CreateShawarma(shawarmaDto));
         }
         
         /// <summary>
@@ -81,15 +72,10 @@ namespace API.Controllers
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteShawarma(int id)
+        public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> DeleteShawarma(int id)
         {
-            var shawarma = _shawarmaService.GetShawarmaById(id).Result;
-
-            if (shawarma == null) 
-                return NotFound();
-            
-            _shawarmaService.DeleteShawarma(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
+                (_shawarmaService.DeleteShawarma(id));
         }
         
         /// <summary>
@@ -102,15 +88,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
+        public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            var shawarma = _shawarmaService.GetShawarmaById(shawarmaDto.Id).Result;
-            
-            if (shawarma == null) 
-                return NotFound();
-            
-            _shawarmaService.UpdateShawarma(shawarmaDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
+                (_shawarmaService.UpdateShawarma(shawarmaDto));
         }
     }
 }

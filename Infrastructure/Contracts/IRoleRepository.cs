@@ -8,11 +8,11 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Role>> GetRoleList();
 
-        void CreateRole(Role role);
+        Task<Role> CreateRole(Role role);
         
-        void UpdateRole(Role role);
+        Task<Role> UpdateRole(Role role);
         
-        void DeleteRole(int id);
+        Task<Role> DeleteRole(int id);
 
         Task<Role> GetRoleById(int id);
     }

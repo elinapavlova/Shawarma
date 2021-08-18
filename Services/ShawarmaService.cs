@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
+using Infrastructure.Error;
+using Infrastructure.Result;
 using Models.Shawarma;
 using Services.Contracts;
 
@@ -18,37 +20,70 @@ namespace Services
             _mapper = mapper;
         }
         
-        public async Task<ICollection<ShawarmaResponseDto>> GetShawarmaList()
+        public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetShawarmaList()
         {
-            var shawarmas = _mapper.Map<ICollection<ShawarmaResponseDto>>(await _repository.GetShawarmaList());
+            var shawarmas = _mapper.Map<ResultContainer<ICollection<ShawarmaResponseDto>>>
+                (await _repository.GetShawarmaList());
             return shawarmas;
         }
 
-        public async Task<ShawarmaResponseDto> GetShawarmaById(int id)
+        public async Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaById(int id)
         {
-            var shawarma = _mapper.Map<ShawarmaResponseDto>(await _repository.GetShawarmaById(id));
-            return shawarma;
-        }
-
-        public void CreateShawarma(ShawarmaRequestDto shawarmaDto)
-        {
-            if (shawarmaDto.Name == null) return;
+            ResultContainer<ShawarmaResponseDto> result = new ResultContainer<ShawarmaResponseDto>();
             
-            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
-            _repository.CreateShawarma(shawarma);
-        }
+            var getShawarma = await _repository.GetShawarmaById(id);
 
-        public void UpdateShawarma(ShawarmaRequestDto shawarmaDto)
-        {
-            if (shawarmaDto.Name == null) return;
+            if (getShawarma == null)
+            {
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
             
-            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
-            _repository.UpdateShawarma(shawarma);
+            result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.GetShawarmaById(id));
+
+            return result;
         }
 
-        public void DeleteShawarma(int id)
+        public async Task<ResultContainer<ShawarmaResponseDto>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            _repository.DeleteShawarma(id);
+            var getShawarma = await GetShawarmaById(shawarmaDto.Id);
+
+            if (getShawarma.Data != null)
+            {
+                getShawarma.ErrorType = ErrorType.BadRequest;
+                return getShawarma;
+            }
+
+            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
+            var result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.CreateShawarma(shawarma));
+            
+            return result;
+        }
+
+        public async Task<ResultContainer<ShawarmaResponseDto>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
+        {
+            var getShawarma = await GetShawarmaById(shawarmaDto.Id);
+
+            if (getShawarma.Data == null)
+                return getShawarma;
+
+            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
+            var result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.UpdateShawarma(shawarma));
+            
+            return result;
+        }
+
+        public async Task<ResultContainer<ShawarmaResponseDto>> DeleteShawarma(int id)
+        {
+            var getShawarma = await GetShawarmaById(id);
+
+            if (getShawarma.Data == null)
+                return getShawarma;
+
+            var result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.DeleteShawarma(id));
+            result.Data = null;
+            
+            return result;
         }
     }
 }

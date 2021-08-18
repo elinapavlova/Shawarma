@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
+using Infrastructure.Error;
+using Infrastructure.Result;
 using Models.User;
 using Services.Contracts;
 
@@ -20,44 +22,74 @@ namespace Services
             _roleService = roleService;
         }
         
-        public async Task<ICollection<UserResponseDto>> GetUserList()
+        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetUserList()
         {
-            var users = _mapper.Map<ICollection<UserResponseDto>>(await _repository.GetUserList());
+            var users = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>(await _repository.GetUserList());
             return users;
         }
 
-        public async Task<UserResponseDto> GetUserById(int id)
+        public async Task<ResultContainer<UserResponseDto>> GetUserById(int id)
         {
-            var user = _mapper.Map<UserResponseDto>(await _repository.GetUserById(id));
+            ResultContainer<UserResponseDto> result = new ResultContainer<UserResponseDto>();
+            
+            var getUser = await _repository.GetUserById(id);
+            
+            if (getUser == null)
+            {
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
+            
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.GetUserById(id));
 
-            return user;
+            return result;
         }
 
-        public void CreateUser(UserRequestDto userDto)
+        public async Task<ResultContainer<UserResponseDto>> CreateUser(UserRequestDto userDto)
         {
-            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
+            var getUser = await GetUserById(userDto.Id);
+            var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
 
-            if (roleOfUser == null) 
-                return;
+            if (getUser.Data != null || roleOfUser.Data == null)
+            {
+                getUser.ErrorType = ErrorType.BadRequest;
+                return getUser;
+            }
+
+            var user = _mapper.Map<User>(userDto);
+            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.CreateUser(user));
+            
+            return result;
+        }
+
+        public async Task<ResultContainer<UserResponseDto>> UpdateUser(UserRequestDto userDto)
+        {
+            var getUser = await GetUserById(userDto.Id);
+            var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+
+            if (getUser.Data == null || roleOfUser == null)
+            {
+                getUser.ErrorType = ErrorType.NotFound;
+                return getUser;
+            }
             
             var user = _mapper.Map<User>(userDto);
-            _repository.CreateUser(user);
+            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.UpdateUser(user));
+            
+            return result;
         }
 
-        public void UpdateUser(UserRequestDto userDto)
+        public async Task<ResultContainer<UserResponseDto>> DeleteUser(int id)
         {
-            var roleOfUser = _roleService.GetRoleById(userDto.IdRole).Result;
+            var getUser = await GetUserById(id);
 
-            if (roleOfUser == null) 
-                return;
+            if (getUser.Data == null)
+                return getUser;
 
-            var user = _mapper.Map<User>(userDto);
-            _repository.UpdateUser(user);
-        }
-
-        public void DeleteUser(int id)
-        {
-            _repository.DeleteUser(id);
+            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.DeleteUser(id));
+            result.Data = null;
+            
+            return result;
         }
     }
 }

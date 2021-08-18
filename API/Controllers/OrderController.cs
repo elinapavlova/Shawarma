@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Order;
@@ -10,18 +10,13 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderController : ControllerBase
+    public class OrderController : BaseController
     {
         private readonly IOrderService _orderService;
-        private readonly IUserService _userService;
-        private readonly IStatusService _statusService;
 
-        public OrderController(IOrderService orderService, IStatusService statusService,
-            IUserService userService)
+        public OrderController(IOrderService orderService)
         {
             _orderService = orderService;
-            _statusService = statusService;
-            _userService = userService;
         }
         
         /// <summary>
@@ -29,10 +24,10 @@ namespace API.Controllers
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet]
-        public async Task<ICollection<OrderResponseDto>> GetOrderList()
+        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetOrderList()
         {
-            var orders = _orderService.GetOrderList().Result;
-            return await Task.FromResult(orders);
+            return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
+                (_orderService.GetOrderList());
         }
         
         /// <summary>
@@ -43,12 +38,8 @@ namespace API.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<OrderResponseDto>> GetOrderById(int id)
         {
-            var order = _orderService.GetOrderById(id).Result;
-
-            if (order == null) 
-                return NotFound();
-            
-            return await Task.FromResult<ActionResult<OrderResponseDto>>(order);
+            return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
+                (_orderService.GetOrderById(id));
         }
         
         /// <summary>
@@ -62,22 +53,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<OrderRequestDto>> CreateOrder(OrderRequestDto orderDto)
+        public async Task<ActionResult<OrderResponseDto>> CreateOrder(OrderRequestDto orderDto)
         {
-            var status = _statusService.GetStatusById(orderDto.IdStatus).Result;
-            var user = _userService.GetUserById(orderDto.IdUser).Result;
-            
-            if (status == null || user == null) 
-                return BadRequest();
-            
-            var order = _orderService.GetOrderById(orderDto.Id).Result;
-
-            if (order != null) 
-                return NoContent();
-            
-            _orderService.CreateOrder(orderDto);
-            return await Task.FromResult<ActionResult<OrderRequestDto>>
-                (CreatedAtAction("GetOrderById", new {id = orderDto.Id}, orderDto));
+            return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
+                ( _orderService.CreateOrder(orderDto));
         }
         
         /// <summary>
@@ -89,15 +68,10 @@ namespace API.Controllers
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteOrder(int id)
+        public async Task<ActionResult<OrderResponseDto>> DeleteOrder(int id)
         {
-            var order = _orderService.GetOrderById(id).Result;
-
-            if (order == null) 
-                return NotFound();
-            
-            _orderService.DeleteOrder(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
+                (_orderService.DeleteOrder(id));
         }
         
         /// <summary>
@@ -110,20 +84,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateOrder(OrderRequestDto orderDto)
+        public async Task<ActionResult<OrderResponseDto>> UpdateOrder(OrderRequestDto orderDto)
         {
-            var status = _statusService.GetStatusById(orderDto.IdStatus).Result;
-            var user = _userService.GetUserById(orderDto.IdUser).Result;
-            var order = _orderService.GetOrderById(orderDto.Id).Result;
-
-            if (order == null)
-                return NotFound();
-
-            if (status == null || user == null) 
-                return BadRequest();
-            
-            _orderService.UpdateOrder(orderDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
+                (_orderService.UpdateOrder(orderDto));
         }
     }
 }

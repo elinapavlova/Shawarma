@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Models.Order;
 
 namespace Services.Contracts
 {
     public interface IOrderService
     {
-        Task<ICollection<OrderResponseDto>> GetOrderList();
-        Task<OrderResponseDto> GetOrderById(int id);
-        void CreateOrder(OrderRequestDto order);
-        void UpdateOrder(OrderRequestDto order);
-        void DeleteOrder(int id);
+        Task<ResultContainer<ICollection<OrderResponseDto>>> GetOrderList();
+        Task<ResultContainer<OrderResponseDto>> GetOrderById(int id);
+        Task<ResultContainer<OrderResponseDto>> CreateOrder(OrderRequestDto order);
+        Task<ResultContainer<OrderResponseDto>> UpdateOrder(OrderRequestDto order);
+        Task<ResultContainer<OrderResponseDto>> DeleteOrder(int id);
     }
 }

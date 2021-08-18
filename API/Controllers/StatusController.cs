@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Status;
@@ -9,7 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StatusController : ControllerBase
+    public class StatusController : BaseController
     {
         private readonly IStatusService _statusService;
 
@@ -24,10 +25,10 @@ namespace API.Controllers
         /// <response code="200">Returns all statuses</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ICollection<StatusResponseDto>> GetStatusList()
+        public async Task<ActionResult<ResultContainer<ICollection<StatusResponseDto>>>> GetStatusList()
         {
-            var statuses = _statusService.GetStatusList().Result;
-            return await Task.FromResult(statuses);
+            return await ReturnResult<ResultContainer<ICollection<StatusResponseDto>>, ICollection<StatusResponseDto>>
+                (_statusService.GetStatusList());
         }
         
         
@@ -41,12 +42,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<StatusResponseDto>> GetStatusById(int id)
         {
-            var status = _statusService.GetStatusById(id).Result;
-            
-            if (status == null) 
-                return NotFound();
-            
-            return await Task.FromResult<ActionResult<StatusResponseDto>>(status);
+            return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
+                (_statusService.GetStatusById(id));
         }
         
         /// <summary>
@@ -62,14 +59,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<StatusRequestDto>> CreateStatus(StatusRequestDto statusDto)
         {
-            var status = _statusService.GetStatusById(statusDto.Id).Result;
-
-            if (status != null) 
-                return NoContent();
-            
-            _statusService.CreateStatus(statusDto);
-            return await Task.FromResult<ActionResult<StatusRequestDto>>
-                (CreatedAtAction("GetStatusById", new {id = statusDto.Id}, statusDto));
+            return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
+                (_statusService.CreateStatus(statusDto));
         }
         
         
@@ -85,13 +76,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteStatus(int id)
         {
-            var status = _statusService.GetStatusById(id).Result;
-
-            if (status == null) 
-                return NotFound();
-            
-            _statusService.DeleteStatus(id);
-            return NoContent();
+            return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
+                (_statusService.DeleteStatus(id));
         }
         
         /// <summary>
@@ -106,13 +92,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateStatus(StatusRequestDto statusDto)
         {
-            var status = _statusService.GetStatusById(statusDto.Id).Result;
-            
-            if (status == null) 
-                return NotFound();
-            
-            _statusService.UpdateStatus(statusDto);
-            return NoContent();
+            return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
+                (_statusService.UpdateStatus(statusDto));
         }
     }
 }
