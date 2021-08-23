@@ -63,13 +63,16 @@ namespace Services
         public async Task<ResultContainer<ShawarmaResponseDto>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
             var getShawarma = await GetShawarmaById(shawarmaDto.Id);
-
-            if (getShawarma.Data == null)
-                return getShawarma;
-
-            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
-            var result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.UpdateShawarma(shawarma));
+            ResultContainer<ShawarmaResponseDto> result;
             
+            if (getShawarma.Data == null)
+            {
+                result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await CreateShawarma(shawarmaDto));
+                return result;
+            }
+            
+            var shawarma = _mapper.Map<Shawarma>(shawarmaDto);
+            result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.UpdateShawarma(shawarma));
             return result;
         }
 

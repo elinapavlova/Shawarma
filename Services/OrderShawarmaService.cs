@@ -92,15 +92,24 @@ namespace Services
             var getOrderShawa = await GetOrderShawarmaById(orderShawaDto.Id);
             var order =await _orderService.GetOrderById(orderShawaDto.OrderId);
             var shawa = await _shawarmaService.GetShawarmaById(orderShawaDto.ShawarmaId);
-
-            if (getOrderShawa.Data == null || order.Data == null || shawa.Data is not {IsActual: true})
+            ResultContainer<OrderShawarmaResponseDto> result;
+                
+            if (order.Data == null || shawa.Data is not {IsActual: true})
             {
                 getOrderShawa.ErrorType = ErrorType.BadRequest;
                 return getOrderShawa;
             }
+
+            if (getOrderShawa.Data == null)
+            {
+                result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
+                    (await CreateOrderShawarma(orderShawaDto));
+                
+                return result;
+            }
             
             var orderShawa = _mapper.Map<OrderShawarma>(orderShawaDto);
-            var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
+            result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
                 (await _repository.UpdateOrderShawarma(orderShawa));
             
             return result;

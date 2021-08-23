@@ -4,6 +4,7 @@ using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Error;
 using Infrastructure.Result;
+using Infrastructure.Validate;
 using Models.User;
 using Services.Contracts;
 
@@ -49,8 +50,9 @@ namespace Services
         {
             var getUser = await GetUserById(userDto.Id);
             var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+            var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
-            if (getUser.Data != null || roleOfUser.Data == null)
+            if (getUser.Data != null || roleOfUser.Data == null || !isValidEmail)
             {
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;
@@ -66,16 +68,30 @@ namespace Services
         {
             var getUser = await GetUserById(userDto.Id);
             var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+            var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
-            if (getUser.Data == null || roleOfUser == null)
+            if (roleOfUser.Data == null)
             {
                 getUser.ErrorType = ErrorType.NotFound;
                 return getUser;
             }
             
+            if (!isValidEmail)
+            {
+                getUser.ErrorType = ErrorType.BadRequest;
+                return getUser;
+            }
+
             var user = _mapper.Map<User>(userDto);
-            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.UpdateUser(user));
+            ResultContainer<UserResponseDto> result;
             
+            if (getUser.Data == null)
+            {
+                result = _mapper.Map<ResultContainer<UserResponseDto>>(await CreateUser(userDto));
+                return result;
+            }
+            
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.UpdateUser(user));
             return result;
         }
 

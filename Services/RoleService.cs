@@ -62,12 +62,17 @@ namespace Services
         public async Task<ResultContainer<RoleResponseDto>> UpdateRole(RoleRequestDto roleDto)
         {
             var getRole = await GetRoleById(roleDto.Id);
+            
+            ResultContainer<RoleResponseDto> result;
 
             if (getRole.Data == null)
-                return getRole;
-
+            {
+                result = _mapper.Map<ResultContainer<RoleResponseDto>>(await CreateRole(roleDto));
+                return result;
+            }
+            
             var role = _mapper.Map<Role>(roleDto);
-            var result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.UpdateRole(role));
+            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.UpdateRole(role));
             
             return result;
         }

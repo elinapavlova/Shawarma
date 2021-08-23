@@ -62,12 +62,16 @@ namespace Services
         public async Task<ResultContainer<StatusResponseDto>> UpdateStatus(StatusRequestDto statusDto)
         {
             var getStatus = await GetStatusById(statusDto.Id);
+            ResultContainer<StatusResponseDto> result;
             
             if (getStatus.Data == null)
-                return getStatus;
+            {
+                result = _mapper.Map<ResultContainer<StatusResponseDto>>(await CreateStatus(statusDto));
+                return result;
+            }
 
-            var status = _mapper.Map<Status>(statusDto);
-            var result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.UpdateStatus(status));
+            var status = _mapper.Map<Status>(statusDto);    
+            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.UpdateStatus(status));
 
             return result;
         }

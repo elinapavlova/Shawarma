@@ -70,16 +70,22 @@ namespace Services
             var user = await _userService.GetUserById(orderDto.IdUser);
             var status = await _statusService.GetStatusById(orderDto.IdStatus);
             var getOrder = await GetOrderById(orderDto.Id);
+            ResultContainer<OrderResponseDto> result;
 
-            if (user.Data == null || status.Data == null || getOrder.Data == null)
+            if (status.Data == null || getOrder.Data == null)
             {
                 getOrder.ErrorType = ErrorType.NotFound;
                 return getOrder;
             }
 
+            if (user.Data == null)
+            {
+                result = _mapper.Map<ResultContainer<OrderResponseDto>>(await CreateOrder(orderDto));
+                return result;
+            }
+
             var newOrder = _mapper.Map<Order>(orderDto);
-            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.UpdateOrder(newOrder));
-            
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.UpdateOrder(newOrder));
             return result;
         }
 
