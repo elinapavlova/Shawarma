@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
@@ -31,7 +32,7 @@ namespace Services
 
         public async Task<ResultContainer<UserResponseDto>> GetUserById(int id)
         {
-            ResultContainer<UserResponseDto> result = new ResultContainer<UserResponseDto>();
+            var result = new ResultContainer<UserResponseDto>();
             
             var getUser = await _repository.GetUserById(id);
             
@@ -41,15 +42,39 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.GetUserById(id));
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
+
+            return result;
+        }
+        
+        public async Task<ResultContainer<UserResponseDto>> GetUserByEmail(string email)
+        {
+            var result = new ResultContainer<UserResponseDto>();
+            
+            var getUser = await _repository.GetUserByEmail(email);
+            
+            if (getUser == null)
+            {
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
+            
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
 
             return result;
         }
 
         public async Task<ResultContainer<UserResponseDto>> CreateUser(UserRequestDto userDto)
         {
-            var getUser = await GetUserById(userDto.Id);
+            var getUser = await GetUserByEmail(userDto.Email);
             var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+            
+            if (userDto.Email == null)
+            {
+                getUser.ErrorType = ErrorType.BadRequest;
+                return getUser;
+            }
+            
             var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
             if (getUser.Data != null || roleOfUser.Data == null || !isValidEmail)
@@ -57,7 +82,7 @@ namespace Services
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;
             }
-
+            
             var user = _mapper.Map<User>(userDto);
             var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.CreateUser(user));
             

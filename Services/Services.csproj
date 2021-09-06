@@ -6,12 +6,23 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.9" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
       <ProjectReference Include="..\Models\Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Mvc.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+        <HintPath>..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\5.0.8\Microsoft.AspNetCore.Mvc.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+        <HintPath>..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\5.0.8\Microsoft.AspNetCore.Mvc.ViewFeatures.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

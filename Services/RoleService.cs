@@ -4,6 +4,7 @@ using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Error;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Models.Role;
 using Services.Contracts;
 
@@ -88,6 +89,13 @@ namespace Services
             result.Data = null;
             
             return result;
+        }
+        
+        public async Task<SelectList> GetRolesSelectList()
+        {
+            var roles = await GetRoleList();
+            var rolesList = new SelectList(roles.Data, "Id", "Name");
+            return rolesList;
         }
     }
 }

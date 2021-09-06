@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Models.User;
 
@@ -15,5 +16,6 @@ namespace Infrastructure.Contracts
         Task<User> DeleteUser(int id);
 
         Task<User> GetUserById(int id);
+        Task<User> GetUserByEmail(string email);
     }
 }

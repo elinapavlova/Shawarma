@@ -1,18 +1,19 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Database;
 using Infrastructure.Contracts;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Services;
 using Services.Contracts;
 
@@ -30,6 +31,8 @@ namespace API
 
         public void ConfigureServices(IServiceCollection services)
         { 
+            services.AddScoped<IAuthService, AuthService>();
+
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserRepository, UserRepository>();
             
@@ -48,6 +51,9 @@ namespace API
             services.AddScoped<IOrderShawarmaService, OrderShawarmaService>();
             services.AddScoped<IOrderShawarmaRepository, OrderShawarmaRepository>();
             
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IAccountService, AccountService>();
+
             services.AddControllers();
             
             var mapperConfig = new MapperConfiguration(mc =>
@@ -57,15 +63,62 @@ namespace API
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             
-            //string connection = Configuration.GetConnectionString("DefaultConnection");
+            //var connection = Configuration.GetConnectionString("DefaultConnection");
             //services.AddDbContext<ApiContext>(options =>
             //    options.UseNpgsql(connection));
-            services.AddDbContext<ApiContext>(opt =>
-                opt.UseInMemoryDatabase("shawarmadb"));
-            
+             
+             var key = Encoding.ASCII.GetBytes(Configuration["AppSettings:Secret"]);
+             services.AddAuthentication(x =>
+                 {
+                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                 })
+                 .AddJwtBearer(x =>
+                 {
+                     x.RequireHttpsMetadata = false;
+                     x.SaveToken = true;
+                     x.TokenValidationParameters = new TokenValidationParameters
+                     {
+                         ValidateIssuerSigningKey = true,
+                         IssuerSigningKey = new SymmetricSecurityKey(key),
+                         ValidateIssuer = false,
+                         ValidateAudience = false,
+                         RequireExpirationTime = false,
+                         ValidateLifetime = false
+                     };
+                 });
+
+             var securityScheme = new OpenApiSecurityScheme
+             {
+                 In = ParameterLocation.Header,
+                 Name = "Authorization",
+                 BearerFormat = "Bearer {authToken}",
+                 Description = "JWT Token",
+                 Type = SecuritySchemeType.ApiKey
+             };
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "API", Version = "v1"}); 
+                
+                c.AddSecurityDefinition(
+                    "Bearer", securityScheme
+                );
+                
+                c.AddSecurityRequirement(
+                    new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme, Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
                 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -85,7 +138,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

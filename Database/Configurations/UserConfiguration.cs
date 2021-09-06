@@ -4,11 +4,11 @@ using Models.User;
 
 namespace Database.Configurations
 {
-    class UserConfiguration : IEntityTypeConfiguration<User>
+    internal class UserConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("Users").Property(p => p.Id).HasDefaultValue(1).IsRequired();
+            builder.ToTable("Users").Property(p => p.Id).IsRequired();
             builder.ToTable("Users").Property(p => p.Email).IsRequired();
             builder.ToTable("Users").Property(p => p.Password).IsRequired();
             builder.ToTable("Users").Property(p => p.UserName).IsRequired();

@@ -1,5 +1,4 @@
-﻿
-namespace Models.User
+﻿namespace Models.User
 {
     public class UserRequestDto
     {

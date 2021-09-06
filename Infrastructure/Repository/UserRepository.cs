@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
@@ -13,9 +14,9 @@ namespace Infrastructure.Repository
         private readonly ApiContext _db;
         private readonly IOrderRepository _orderRepository;
 
-        public UserRepository(ApiContext context, IOrderRepository orderRepository)
+        public UserRepository(IOrderRepository orderRepository)
         {
-            _db = context;
+            _db = new ApiContext();
             _orderRepository = orderRepository;
         }
 
@@ -30,8 +31,8 @@ namespace Infrastructure.Repository
             
             foreach (var user in users)
             {
-                var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
-                user.Orders = ordersOfUser;
+                //var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
+                //user.Orders = ordersOfUser;
             }
             
             return users; 
@@ -69,19 +70,29 @@ namespace Infrastructure.Repository
             return user;
         }
 
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.Email != null && email == u.Email);
+
+            return user;
+        }
+        
         public async Task<User> GetUserById(int id)
         {
             var user = await _db.Users.FindAsync(id);
+            
             if (user == null) 
                 return null;
             
             var orders = await _orderRepository.GetOrderList();
+
             if (orders.Count == 0)
                 return user;
-            
+
             var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
 
             user.Orders = ordersOfUser;
+            
             return user;
         }
     }

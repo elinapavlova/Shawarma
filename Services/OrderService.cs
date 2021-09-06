@@ -50,16 +50,16 @@ namespace Services
         {
             //    if (orderDto.Date.Hour is > 12 or < 9) return null;
             var user = await _userService.GetUserById(orderDto.IdUser);
-            var status = await _statusService.GetStatusById(orderDto.IdStatus);
             var getOrder = await GetOrderById(orderDto.Id);
 
-            if (getOrder.Data != null || user.Data == null || status.Data == null)
+            if (getOrder.Data != null || user.Data == null)
             {
                 getOrder.ErrorType = ErrorType.BadRequest;
                 return getOrder;
             }
 
             var newOrder = _mapper.Map<Order>(orderDto);
+            newOrder.IdStatus = 1;
             var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
 
             return result;

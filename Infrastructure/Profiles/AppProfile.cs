@@ -70,6 +70,13 @@ namespace Infrastructure.Profiles
             CreateMap<ICollection<OrderShawarma>, ResultContainer<ICollection<OrderShawarmaResponseDto>>>()
                 .ForMember("Data", opt 
                     => opt.MapFrom(s => s));
+   /*         
+            CreateMap<UserLoginResponseDto, ResultContainer<UserLoginResponseDto>>().ForMember("Data", opt
+                => opt.MapFrom(s => s));
+            CreateMap<ICollection<UserLoginResponseDto>, ResultContainer<ICollection<UserLoginResponseDto>>>()
+                .ForMember("Data", opt 
+                    => opt.MapFrom(s => s));
+    */
         }
     }
 }

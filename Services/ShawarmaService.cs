@@ -20,6 +20,13 @@ namespace Services
             _mapper = mapper;
         }
         
+        public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetActualShawarmaList()
+        {
+            var shawarmas = _mapper.Map<ResultContainer<ICollection<ShawarmaResponseDto>>>
+                (await _repository.GetActualShawarmaList());
+            return shawarmas;
+        }
+        
         public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetShawarmaList()
         {
             var shawarmas = _mapper.Map<ResultContainer<ICollection<ShawarmaResponseDto>>>
@@ -43,10 +50,27 @@ namespace Services
 
             return result;
         }
+        
+        public async Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaByName(string name)
+        {
+            ResultContainer<ShawarmaResponseDto> result = new ResultContainer<ShawarmaResponseDto>();
+            
+            var getShawarma = await _repository.GetShawarmaByName(name);
+
+            if (getShawarma == null)
+            {
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
+            
+            result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.GetShawarmaByName(name));
+
+            return result;
+        }
 
         public async Task<ResultContainer<ShawarmaResponseDto>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            var getShawarma = await GetShawarmaById(shawarmaDto.Id);
+            var getShawarma = await GetShawarmaByName(shawarmaDto.Name);
 
             if (getShawarma.Data != null)
             {
@@ -62,7 +86,7 @@ namespace Services
 
         public async Task<ResultContainer<ShawarmaResponseDto>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
-            var getShawarma = await GetShawarmaById(shawarmaDto.Id);
+            var getShawarma = await GetShawarmaByName(shawarmaDto.Name);
             ResultContainer<ShawarmaResponseDto> result;
             
             if (getShawarma.Data == null)

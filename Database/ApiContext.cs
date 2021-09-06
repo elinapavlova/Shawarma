@@ -18,15 +18,15 @@ namespace Database
         public DbSet<OrderShawarma> OrderShawarmas { get; set; }
         public DbSet<Role> Roles { get; set; }
 
-        //public ApiContext()  { }
-        public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
-        /*
+        //public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
                 .UseNpgsql("Host=localhost;Port=5432;Database=shawarmadb;Username=postgres;Password=root");
         }
-*/
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new UserConfiguration());

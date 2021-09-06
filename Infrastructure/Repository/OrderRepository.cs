@@ -13,9 +13,9 @@ namespace Infrastructure.Repository
         private readonly ApiContext _db;
         private readonly IOrderShawarmaRepository _repository;
 
-        public OrderRepository(ApiContext context, IOrderShawarmaRepository repository)
+        public OrderRepository(IOrderShawarmaRepository repository)
         {
-            _db = context;
+            _db = new ApiContext();;
             _repository = repository;
         }
         

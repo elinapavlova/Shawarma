@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +12,22 @@ namespace Infrastructure.Repository
     {
         private readonly ApiContext _db;
         
-        public ShawarmaRepository(ApiContext context)
+        public ShawarmaRepository()
         {
-            _db = context;
+            _db = new ApiContext();
         }
         public async Task<ICollection<Shawarma>> GetShawarmaList()
         {
-            var shawarmas = await _db.Shawarmas.ToListAsync();
+            var shawarmas = await _db.Shawarmas.OrderBy(u => u.Id).ToListAsync();
+            return shawarmas; 
+        }
+        
+        public async Task<ICollection<Shawarma>> GetActualShawarmaList()
+        {
+            var shawarmas = await _db.Shawarmas
+                .OrderBy(s => s.Id)
+                .Where(s => s.IsActual == true)
+                .ToListAsync();
             return shawarmas; 
         }
 
@@ -31,8 +41,9 @@ namespace Infrastructure.Repository
 
         public async Task<Shawarma> UpdateShawarma(Shawarma newShawarma)
         {
-            var shawarma = await _db.Shawarmas.FindAsync(newShawarma.Id);
             
+            var shawarma = _db.Shawarmas.FirstOrDefault(s => s.Name != null && newShawarma.Name == s.Name);
+
             shawarma.Name = newShawarma.Name;
             shawarma.Cost = newShawarma.Cost;
             shawarma.IsActual = newShawarma.IsActual;
@@ -55,6 +66,13 @@ namespace Infrastructure.Repository
         public async Task<Shawarma> GetShawarmaById(int id)
         {
             var shawarma = await _db.Shawarmas.FindAsync(id);
+            return shawarma;
+        }
+        
+        public async Task<Shawarma> GetShawarmaByName(string name)
+        {
+            var shawarma = _db.Shawarmas.FirstOrDefault(s => s.Name != null && name == s.Name);
+
             return shawarma;
         }
     }
