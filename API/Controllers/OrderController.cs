@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +29,17 @@ namespace API.Controllers
         {
             return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
                 (_orderService.GetOrderList());
+        }
+        
+        /// <summary>
+        /// Gets all actual (today) orders
+        /// </summary>
+        /// <response code="200">Returns all orders</response>
+        [HttpGet("{date:datetime}")]
+        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetActualOrderList(DateTime date)
+        {
+            return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
+                (_orderService.GetActualOrderList(date));
         }
         
         /// <summary>

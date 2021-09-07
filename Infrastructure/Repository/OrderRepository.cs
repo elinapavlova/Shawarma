@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
@@ -15,8 +16,27 @@ namespace Infrastructure.Repository
 
         public OrderRepository(IOrderShawarmaRepository repository)
         {
-            _db = new ApiContext();;
+            _db = new ApiContext();
             _repository = repository;
+        }
+        
+        public async Task<ICollection<Order>> GetActualOrderList(DateTime date)
+        {
+            var orders = await _db.Orders.Where(o => o.Date.Day == DateTime.Today.Day).ToListAsync();
+            
+            var orderShawas = await _repository.GetOrderShawarmaList();
+            if (orderShawas.Count == 0)
+                return orders;
+
+            foreach (var order in orders)
+            {
+                var orderShawasOfOrder = orderShawas
+                    .Where(o => o.OrderId == order.Id).ToList();
+                
+                order.OrderShawarmas = orderShawasOfOrder;
+            }
+            
+            return orders;
         }
         
         public async Task<ICollection<Order>> GetOrderList()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
@@ -31,9 +32,16 @@ namespace Services
             return orders;
         }
 
+        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualOrderList(DateTime date)
+        {
+            var orders = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
+                (await _repository.GetActualOrderList(date));
+            return orders;
+        }
+        
         public async Task<ResultContainer<OrderResponseDto>> GetOrderById(int id)
         {
-            ResultContainer<OrderResponseDto> result = new ResultContainer<OrderResponseDto>();
+            var result = new ResultContainer<OrderResponseDto>();
             var getOrder = await _repository.GetOrderById(id);
 
             if (getOrder == null)
@@ -47,8 +55,16 @@ namespace Services
         }
 
         public async Task<ResultContainer<OrderResponseDto>> CreateOrder(OrderRequestDto orderDto)
-        {
-            //    if (orderDto.Date.Hour is > 12 or < 9) return null;
+        { 
+            var result = new ResultContainer<OrderResponseDto>();
+            
+            /*
+            if (orderDto.Date.Hour is > 12 or < 9)
+            {
+                result.ErrorType = ErrorType.BadRequest;
+                return result;
+            }
+            */
             var user = await _userService.GetUserById(orderDto.IdUser);
             var getOrder = await GetOrderById(orderDto.Id);
 
@@ -60,7 +76,7 @@ namespace Services
 
             var newOrder = _mapper.Map<Order>(orderDto);
             newOrder.IdStatus = 1;
-            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
 
             return result;
         }

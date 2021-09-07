@@ -53,6 +53,7 @@ namespace API
             
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IGenericService, GenericService>();
 
             services.AddControllers();
             
