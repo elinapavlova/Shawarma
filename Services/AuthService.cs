@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Infrastructure.Error;
 using Infrastructure.Result;
+using Models.Error;
 using Models.User;
 using Services.Contracts;
 
@@ -41,6 +41,31 @@ namespace Services
             return res;
         }
         
+        public async Task<ResultContainer<UserResponseDto>> VerifyUserJwt(string jwt)
+        {
+            var user = new ResultContainer<UserResponseDto>();
+
+            if (jwt == null)
+            {
+                user.ErrorType = ErrorType.Unauthorized;
+                return user;
+            }
+            
+            var token = _jwtService.Verify(jwt);
+            
+            if (token == null)
+            {
+                user.ErrorType = ErrorType.Unauthorized;
+                return user;
+            }
+            
+            var userId = int.Parse(token.Issuer);
+            
+            user = await _userService.GetUserById(userId);
+
+            return user;
+        }
+        
         public async Task<ResultContainer<UserResponseDto>> LoginUser(UserLoginDto dto)
         {
             var user = await VerifyUser(dto.Email, dto.Password);
@@ -51,6 +76,7 @@ namespace Services
         {
             var user = await _userService.GetUserByEmail(dto.Email);
 
+            // Если пользователь существует
             if (user.Data != null)
             {
                 user.ErrorType = ErrorType.BadRequest;

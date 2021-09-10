@@ -11,9 +11,9 @@ namespace Infrastructure.Repository
     {
         private readonly ApiContext _db;
 
-        public OrderShawarmaRepository()
+        public OrderShawarmaRepository(ApiContext context)
         {
-            _db = new ApiContext();
+            _db = context;
         }
 
         public async Task<ICollection<OrderShawarma>> GetOrderShawarmaList()

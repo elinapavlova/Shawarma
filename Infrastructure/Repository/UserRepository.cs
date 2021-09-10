@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -9,44 +10,62 @@ using Models.User;
 
 namespace Infrastructure.Repository
 {
-    public class UserRepository : IUserRepository
+    public sealed class UserRepository : IUserRepository
     {
         private readonly ApiContext _db;
-        private readonly IOrderRepository _orderRepository;
-
-        public UserRepository(IOrderRepository orderRepository)
-        {
-            _db = new ApiContext();
-            _orderRepository = orderRepository;
-        }
-
-        public async Task<ICollection<User>> GetUserList()
-        {
-            var users = await _db.Users.ToListAsync();
-            
-            var orders = await _orderRepository.GetOrderList();
-            
-            if (orders.Count == 0)
-                return users;
-            
-            foreach (var user in users)
-            {
-                //var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
-                //user.Orders = ordersOfUser;
-            }
-            
-            return users; 
-        }
+        private readonly int _appSettingsConfiguration;
         
-        public async Task<User> CreateUser(User user)
+        public UserRepository(ApiContext context, IConfiguration configuration)
         {
-            await _db.Users.AddAsync(user);
-            await _db.SaveChangesAsync();
+            _db = context;
+            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+        }
 
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.Email != null && email == u.Email);
             return user;
         }
 
-        public async Task<User> UpdateUser(User newUser)
+        public async Task<ICollection<User>> GetPage(int pageSize, int page = 1)
+        {
+            var source = await GetList();
+            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
+            return result;
+        }
+
+        public async Task<ICollection<User>> ApplyPaging(ICollection<User> source, int pageSize, int page = 1)
+        {
+            var shawarmas = source.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            return shawarmas;
+        }
+        
+        public async Task<ICollection<User>> GetList()
+        {
+            var users = await _db.Users.ToListAsync();
+            return users; 
+        }
+
+        public async Task<int> Count()
+        {
+            var count = await _db.Users.CountAsync();
+            return count;
+        }
+
+        public async Task<User> GetById(int id)
+        {
+            var user = await _db.Users.FindAsync(id);
+            return user;
+        }
+
+        public async Task<User> Create(User user)
+        {
+            await _db.Users.AddAsync(user);
+            await _db.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<User> Edit(User newUser)
         {
             var user = await _db.Users.FindAsync(newUser.Id);
             
@@ -61,38 +80,11 @@ namespace Infrastructure.Repository
             return user;
         }
 
-        public async Task<User> DeleteUser(int id)
+        public async Task<User> Delete(int id)
         {
             var user = await _db.Users.FindAsync(id);
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
-
-            return user;
-        }
-
-        public async Task<User> GetUserByEmail(string email)
-        {
-            var user = _db.Users.FirstOrDefault(u => u.Email != null && email == u.Email);
-
-            return user;
-        }
-        
-        public async Task<User> GetUserById(int id)
-        {
-            var user = await _db.Users.FindAsync(id);
-            
-            if (user == null) 
-                return null;
-            
-            var orders = await _orderRepository.GetOrderList();
-
-            if (orders.Count == 0)
-                return user;
-
-            var ordersOfUser = orders.Where(o => o.IdUser == user.Id).ToList();
-
-            user.Orders = ordersOfUser;
-            
             return user;
         }
     }

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace Models.Order
 {
-    public class Order
+    public class Order : BaseModel
     {
-        public int Id { get; set; }
         public DateTime Date { get; set; }
         public string Comment { get; set; }
         public int IdStatus { get; set; }

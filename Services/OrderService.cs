@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
-using Infrastructure.Error;
 using Infrastructure.Result;
+using Models.Error;
 using Models.Order;
 using Services.Contracts;
 
@@ -75,7 +75,7 @@ namespace Services
             }
 
             var newOrder = _mapper.Map<Order>(orderDto);
-            newOrder.IdStatus = 1;
+            //newOrder.IdStatus = 1;
             result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
 
             return result;

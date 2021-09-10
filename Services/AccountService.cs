@@ -1,65 +1,39 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Infrastructure.Error;
 using Infrastructure.Result;
+using Microsoft.Extensions.Configuration;
 using Models.Account;
 using Models.Order;
 using Models.OrderShawarma;
+using Models.Shawarma;
 using Models.User;
+using Models.ViewModels;
 using Services.Contracts;
 
 namespace Services
 {
     public class AccountService : IAccountService
     {
-        private readonly IJwtService _jwtService;
-        private readonly IUserService _userService;
         private readonly IOrderService _orderService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IOrderShawarmaService _orderShawarmaService;
+        private readonly int _appSettingsConfiguration;
         
         public AccountService
         (
-            IJwtService jwtService,
-            IUserService userService,
             IOrderService orderService,
             IShawarmaService shawarmaService,
-            IOrderShawarmaService orderShawarmaService
+            IOrderShawarmaService orderShawarmaService,
+            IConfiguration configuration
         )
         {
-            _jwtService = jwtService;
-            _userService = userService;
             _orderService = orderService;
             _shawarmaService = shawarmaService;
             _orderShawarmaService = orderShawarmaService;
+            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
-        
-        public async Task<ResultContainer<UserResponseDto>> VerifyUserJwt(string jwt)
-        {
-            var user = new ResultContainer<UserResponseDto>();
 
-            if (jwt == null)
-            {
-                user.ErrorType = ErrorType.Unauthorized;
-                return user;
-            }
-            
-            var token = _jwtService.Verify(jwt);
-            
-            if (token == null)
-            {
-                user.ErrorType = ErrorType.Unauthorized;
-                return user;
-            }
-            
-            var userId = int.Parse(token.Issuer);
-            
-            user = await _userService.GetUserById(userId);
-
-            return user;
-        }
-        
         public async void CreateOrder(ResultContainer<UserResponseDto> user, string rows)
         {
             var orderFromJson = JsonSerializer.Deserialize<CreateOrderViewModel[]>(rows);
@@ -88,6 +62,24 @@ namespace Services
                 await _orderShawarmaService.CreateOrderShawarma(orderShawa);
                 i++;
             }
+        }
+
+        public async Task<IndexViewModel<ShawarmaResponseDto>> GetPage( bool needOnlyActual, int page = 1)
+        {
+            const int pageSize = 2;
+            var count = await _shawarmaService.Count();
+            var viewPage = 
+                await _shawarmaService.GetShawarmaListByPage(_appSettingsConfiguration, needOnlyActual, page);
+
+            var pageViewModel = new PageViewModel(count, page, _appSettingsConfiguration);
+            
+            var viewModel = new IndexViewModel<ShawarmaResponseDto>
+            {
+                PageViewModel = pageViewModel,
+                Things = viewPage.Data
+            };
+
+            return viewModel;
         }
     }
 }

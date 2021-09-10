@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Models.Shawarma;
 using Services.Contracts;
 
@@ -27,10 +25,10 @@ namespace API.Controllers
         /// <response code="200">Returns all shawarmas</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList()
+        public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<ShawarmaResponseDto>>,
-                ICollection<ShawarmaResponseDto>>(_shawarmaService.GetShawarmaList());;
+                ICollection<ShawarmaResponseDto>>(_shawarmaService.GetShawarmaListByPage(2, true, page));;
         }
         
         /// <summary>

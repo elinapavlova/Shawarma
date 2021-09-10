@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
-using Infrastructure.Error;
 using Infrastructure.Result;
 using Infrastructure.Validate;
+using Models.Error;
 using Models.User;
 using Services.Contracts;
 
@@ -26,15 +25,22 @@ namespace Services
         
         public async Task<ResultContainer<ICollection<UserResponseDto>>> GetUserList()
         {
-            var users = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>(await _repository.GetUserList());
-            return users;
+            var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
+                (await _repository.GetList());
+            return result;
+        }
+
+        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetUserListByPage(int pageSize, int page = 1)
+        {
+            var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
+                (await _repository.GetPage(pageSize, page));
+            return result;
         }
 
         public async Task<ResultContainer<UserResponseDto>> GetUserById(int id)
         {
             var result = new ResultContainer<UserResponseDto>();
-            
-            var getUser = await _repository.GetUserById(id);
+            var getUser = await _repository.GetById(id);
             
             if (getUser == null)
             {
@@ -43,14 +49,12 @@ namespace Services
             }
             
             result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
-
             return result;
         }
         
         public async Task<ResultContainer<UserResponseDto>> GetUserByEmail(string email)
         {
             var result = new ResultContainer<UserResponseDto>();
-            
             var getUser = await _repository.GetUserByEmail(email);
             
             if (getUser == null)
@@ -60,7 +64,6 @@ namespace Services
             }
             
             result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
-
             return result;
         }
 
@@ -84,8 +87,7 @@ namespace Services
             }
             
             var user = _mapper.Map<User>(userDto);
-            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.CreateUser(user));
-            
+            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.Create(user));
             return result;
         }
 
@@ -116,7 +118,7 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.UpdateUser(user));
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.Edit(user));
             return result;
         }
 
@@ -127,9 +129,8 @@ namespace Services
             if (getUser.Data == null)
                 return getUser;
 
-            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.DeleteUser(id));
+            var result = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.Delete(id));
             result.Data = null;
-            
             return result;
         }
     }

@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
-using Infrastructure.Error;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Models.Error;
 using Models.Role;
 using Services.Contracts;
 

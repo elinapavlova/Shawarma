@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using AutoMapper;
+using Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ using Infrastructure.Contracts;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Services;
 using Services.Contracts;
@@ -30,12 +32,10 @@ namespace API
 
 
         public void ConfigureServices(IServiceCollection services)
-        { 
-            services.AddScoped<IAuthService, AuthService>();
-
-            services.AddScoped<IUserService, UserService>();
+        {
             services.AddScoped<IUserRepository, UserRepository>();
-            
+            services.AddScoped<IUserService, UserService>();
+
             services.AddScoped<IShawarmaService, ShawarmaService>();
             services.AddScoped<IShawarmaRepository, ShawarmaRepository>();
             
@@ -53,7 +53,8 @@ namespace API
             
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IGenericService, GenericService>();
+            services.AddScoped<IAuthService, AuthService>();
+            //services.AddScoped<IGenericService, GenericService>();
 
             services.AddControllers();
             
@@ -64,9 +65,9 @@ namespace API
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             
-            //var connection = Configuration.GetConnectionString("DefaultConnection");
-            //services.AddDbContext<ApiContext>(options =>
-            //    options.UseNpgsql(connection));
+            var connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection));
+            
              
              var key = Encoding.ASCII.GetBytes(Configuration["AppSettings:Secret"]);
              services.AddAuthentication(x =>

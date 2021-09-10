@@ -1,4 +1,4 @@
-﻿using Infrastructure.Error;
+﻿using Models.Error;
 
 namespace Infrastructure.Result
 {

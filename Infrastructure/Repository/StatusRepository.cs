@@ -11,9 +11,9 @@ namespace Infrastructure.Repository
     {
         private readonly ApiContext _db;
 
-        public StatusRepository()
+        public StatusRepository(ApiContext context)
         {
-            _db = new ApiContext();
+            _db = context;
         }
         
         public async Task<ICollection<Status>> GetStatusList()

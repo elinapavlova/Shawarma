@@ -25,10 +25,10 @@ namespace API.Controllers
         /// <response code="200">Returns all users</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ResultContainer<ICollection<UserResponseDto>>>> GetUserList()
+        public async Task<ActionResult<ResultContainer<ICollection<UserResponseDto>>>> GetUserList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<UserResponseDto>>, ICollection<UserResponseDto>>
-                (_userService.GetUserList());
+                (_userService.GetUserListByPage(2, page));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace API.Controllers
         public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
         {
             return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
-                (_userService.GetUserById(id));
+                ( _userService.GetUserById(id));
         }
 
         /// <summary>

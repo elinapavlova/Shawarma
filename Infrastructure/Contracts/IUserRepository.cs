@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Models.User;
 
 namespace Infrastructure.Contracts
 {
-    public interface IUserRepository
+    public interface IUserRepository : IBaseRepository<User>
+
     {
-        Task<ICollection<User>> GetUserList();
-
-        Task<User> CreateUser(User user);
-
-        Task<User> UpdateUser(User user);
-        
-        Task<User> DeleteUser(int id);
-
-        Task<User> GetUserById(int id);
         Task<User> GetUserByEmail(string email);
+        Task<ICollection<User>> GetPage(int pageSize, int page = 1);
     }
 }

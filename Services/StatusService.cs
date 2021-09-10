@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
-using Infrastructure.Error;
 using Infrastructure.Result;
+using Models.Error;
 using Models.Status;
 using Services.Contracts;
 

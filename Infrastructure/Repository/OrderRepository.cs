@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Models.Order;
 
 namespace Infrastructure.Repository
@@ -12,26 +13,27 @@ namespace Infrastructure.Repository
     public class OrderRepository : IOrderRepository
     {
         private readonly ApiContext _db;
-        private readonly IOrderShawarmaRepository _repository;
-
-        public OrderRepository(IOrderShawarmaRepository repository)
+        private readonly int _appSettingsConfiguration;
+        
+        public OrderRepository(ApiContext context, IConfiguration configuration)
         {
-            _db = new ApiContext();
-            _repository = repository;
+            _db = context;
+            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         public async Task<ICollection<Order>> GetActualOrderList(DateTime date)
         {
             var orders = await _db.Orders.Where(o => o.Date.Day == DateTime.Today.Day).ToListAsync();
+            var orderShawas = await _db.OrderShawarmas.ToListAsync();
             
-            var orderShawas = await _repository.GetOrderShawarmaList();
             if (orderShawas.Count == 0)
                 return orders;
 
             foreach (var order in orders)
             {
                 var orderShawasOfOrder = orderShawas
-                    .Where(o => o.OrderId == order.Id).ToList();
+                    .Where(o => o.OrderId == order.Id)
+                    .ToList();
                 
                 order.OrderShawarmas = orderShawasOfOrder;
             }
@@ -42,15 +44,16 @@ namespace Infrastructure.Repository
         public async Task<ICollection<Order>> GetOrderList()
         {
             var orders = await _db.Orders.ToListAsync();
+            var orderShawas = await _db.OrderShawarmas.ToListAsync();
             
-            var orderShawas = await _repository.GetOrderShawarmaList();
             if (orderShawas.Count == 0)
                 return orders;
 
             foreach (var order in orders)
             {
                 var orderShawasOfOrder = orderShawas
-                    .Where(o => o.OrderId == order.Id).ToList();
+                    .Where(o => o.OrderId == order.Id)
+                    .ToList();
                 
                 order.OrderShawarmas = orderShawasOfOrder;
             }
@@ -96,7 +99,7 @@ namespace Infrastructure.Repository
             if (order == null) 
                 return null;
 
-            var orderShawas = await _repository.GetOrderShawarmaList();
+            var orderShawas = await _db.OrderShawarmas.ToListAsync();
             if (orderShawas.Count == 0)
                 return order;
             

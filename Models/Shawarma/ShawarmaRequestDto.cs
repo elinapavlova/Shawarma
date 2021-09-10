@@ -1,6 +1,4 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
-
 namespace Models.Shawarma
 {
     public class ShawarmaRequestDto

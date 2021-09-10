@@ -18,14 +18,7 @@ namespace Database
         public DbSet<OrderShawarma> OrderShawarmas { get; set; }
         public DbSet<Role> Roles { get; set; }
 
-        //public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
-
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder
-                .UseNpgsql("Host=localhost;Port=5432;Database=shawarmadb;Username=postgres;Password=root");
-        }
+        public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +28,7 @@ namespace Database
             modelBuilder.ApplyConfiguration(new StatusConfiguration());
             modelBuilder.ApplyConfiguration(new OrderShawarmaConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            //modelBuilder.Entity<Shawarma>(p => {p.})
         }
     }
 }

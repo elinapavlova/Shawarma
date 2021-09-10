@@ -12,9 +12,9 @@ namespace Infrastructure.Repository
     {
         private readonly ApiContext _db;
 
-        public RoleRepository()
+        public RoleRepository(ApiContext context)
         {
-            _db = new ApiContext();
+            _db = context;
         }
 
         public async Task<ICollection<Role>> GetRoleList()

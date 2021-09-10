@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Error
+﻿namespace Models.Error
 {
     public enum ErrorType
     {
