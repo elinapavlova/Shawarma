@@ -14,5 +14,6 @@ namespace Infrastructure.Contracts
         Task<ICollection<TModel>> ApplyPaging(ICollection<TModel> source, int pageSize, int page = 1);
         Task<ICollection<TModel>> GetList();
         Task<int> Count();
+        Task<ICollection<TModel>> GetPage(int pageSize, int page = 1);
     }
 }

@@ -15,7 +15,11 @@ namespace Infrastructure.Repository
         private readonly ApiContext _db;
         private readonly int _appSettingsConfiguration;
         
-        public UserRepository(ApiContext context, IConfiguration configuration)
+        public UserRepository
+        (
+            ApiContext context, 
+            IConfiguration configuration
+        )
         {
             _db = context;
             _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
@@ -36,13 +40,18 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<User>> ApplyPaging(ICollection<User> source, int pageSize, int page = 1)
         {
-            var shawarmas = source.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var shawarmas = source
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
             return shawarmas;
         }
         
         public async Task<ICollection<User>> GetList()
         {
-            var users = await _db.Users.ToListAsync();
+            var users = await _db.Users
+                .OrderBy(o => o.Id)
+                .ToListAsync();
             return users; 
         }
 

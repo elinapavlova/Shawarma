@@ -8,6 +8,5 @@ namespace Infrastructure.Contracts
 
     {
         Task<User> GetUserByEmail(string email);
-        Task<ICollection<User>> GetPage(int pageSize, int page = 1);
     }
 }

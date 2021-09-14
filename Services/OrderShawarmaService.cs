@@ -16,8 +16,13 @@ namespace Services
         private readonly IOrderService _orderService;
         private readonly IShawarmaService _shawarmaService;
 
-        public OrderShawarmaService(IOrderShawarmaRepository repository, IMapper mapper, IOrderService orderService,
-            IShawarmaService shawarmaService)
+        public OrderShawarmaService
+        (
+            IOrderShawarmaRepository repository, 
+            IMapper mapper, 
+            IOrderService orderService,
+            IShawarmaService shawarmaService
+        )
         {
             _repository = repository;
             _mapper = mapper;
@@ -25,19 +30,26 @@ namespace Services
             _shawarmaService = shawarmaService;
         }
 
-        public async Task<ResultContainer<ICollection<OrderShawarmaResponseDto>>> GetOrderShawarmaList()
+        private async Task<ResultContainer<ICollection<OrderShawarmaResponseDto>>> GetList()
         {
             var orderShawas = _mapper.Map<ResultContainer<ICollection<OrderShawarmaResponseDto>>>
-                (await _repository.GetOrderShawarmaList());
+                (await _repository.GetList());
             
             return orderShawas;
         }
 
-        public async Task<ResultContainer<OrderShawarmaResponseDto>> GetOrderShawarmaById(int id)
+        public async Task<ResultContainer<ICollection<OrderShawarmaResponseDto>>> GetListByPage(int pageSize, int page = 1)
         {
-            ResultContainer<OrderShawarmaResponseDto> result = new ResultContainer<OrderShawarmaResponseDto>();
+            var result = _mapper.Map<ResultContainer<ICollection<OrderShawarmaResponseDto>>>
+                (await _repository.GetPage(pageSize, page));
             
-            var getOrderShawarma = await _repository.GetOrderShawarmaById(id);
+            return result;
+        }
+
+        public async Task<ResultContainer<OrderShawarmaResponseDto>> GetById(int id)
+        {
+            var result = new ResultContainer<OrderShawarmaResponseDto>();
+            var getOrderShawarma = await _repository.GetById(id);
             
             if (getOrderShawarma == null)
             {
@@ -45,16 +57,16 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.GetOrderShawarmaById(id));
+            result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.GetById(id));
 
             return result;
         }
 
-        public async Task<ResultContainer<OrderShawarmaResponseDto>> CreateOrderShawarma(OrderShawarmaRequestDto orderShawaDto)
+        public async Task<ResultContainer<OrderShawarmaResponseDto>> Create(OrderShawarmaRequestDto orderShawaDto)
         {
-            var getOrderShawa = await GetOrderShawarmaById(orderShawaDto.Id);
-            var order =await _orderService.GetOrderById(orderShawaDto.OrderId);
-            var shawa = await _shawarmaService.GetShawarmaById(orderShawaDto.ShawarmaId);
+            var getOrderShawa = await GetById(orderShawaDto.Id);
+            var order =await _orderService.GetById(orderShawaDto.OrderId);
+            var shawa = await _shawarmaService.GetById(orderShawaDto.ShawarmaId);
 
             if (order.Data == null || shawa.Data is not {IsActual: true})
             {
@@ -62,7 +74,7 @@ namespace Services
                 return getOrderShawa;
             }
             
-            var orderShawas = await GetOrderShawarmaList();
+            var orderShawas = await GetList();
             
             foreach (var os in orderShawas.Data)
             {
@@ -75,23 +87,23 @@ namespace Services
                 var newOrderShawa = _mapper.Map<OrderShawarmaRequestDto>(os);
                 
                 var getResult = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                    (await UpdateOrderShawarma(newOrderShawa));
+                    (await Edit(newOrderShawa));
                 
                 return getResult;
             }
             
             var orderShawa = _mapper.Map<OrderShawarma>(orderShawaDto);
             var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                (await _repository.CreateOrderShawarma(orderShawa));
+                (await _repository.Create(orderShawa));
             
             return result;
         }
 
-        public async Task<ResultContainer<OrderShawarmaResponseDto>> UpdateOrderShawarma(OrderShawarmaRequestDto orderShawaDto)
+        public async Task<ResultContainer<OrderShawarmaResponseDto>> Edit(OrderShawarmaRequestDto orderShawaDto)
         {
-            var getOrderShawa = await GetOrderShawarmaById(orderShawaDto.Id);
-            var order =await _orderService.GetOrderById(orderShawaDto.OrderId);
-            var shawa = await _shawarmaService.GetShawarmaById(orderShawaDto.ShawarmaId);
+            var getOrderShawa = await GetById(orderShawaDto.Id);
+            var order =await _orderService.GetById(orderShawaDto.OrderId);
+            var shawa = await _shawarmaService.GetById(orderShawaDto.ShawarmaId);
             ResultContainer<OrderShawarmaResponseDto> result;
                 
             if (order.Data == null || shawa.Data is not {IsActual: true})
@@ -103,26 +115,26 @@ namespace Services
             if (getOrderShawa.Data == null)
             {
                 result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                    (await CreateOrderShawarma(orderShawaDto));
+                    (await Create(orderShawaDto));
                 
                 return result;
             }
             
             var orderShawa = _mapper.Map<OrderShawarma>(orderShawaDto);
             result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                (await _repository.UpdateOrderShawarma(orderShawa));
+                (await _repository.Edit(orderShawa));
             
             return result;
         }
 
-        public async Task<ResultContainer<OrderShawarmaResponseDto>> DeleteOrderShawarma(int id)
+        public async Task<ResultContainer<OrderShawarmaResponseDto>> Delete(int id)
         {
-            var getOrderShawa = await GetOrderShawarmaById(id);
+            var getOrderShawa = await GetById(id);
 
             if (getOrderShawa.Data == null)
                 return getOrderShawa;
 
-            var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.DeleteOrderShawarma(id));
+            var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.Delete(id));
             result.Data = null;
             
             return result;

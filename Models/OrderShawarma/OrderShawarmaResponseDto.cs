@@ -1,8 +1,7 @@
 ﻿namespace Models.OrderShawarma
 {
-    public class OrderShawarmaResponseDto
+    public class OrderShawarmaResponseDto : BaseModel
     {
-        public int Id { get; set; }
         public int OrderId { get; set; }
         public int ShawarmaId { get; set; }
         public int Number { get; set; }

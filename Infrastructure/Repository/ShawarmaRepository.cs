@@ -15,7 +15,11 @@ namespace Infrastructure.Repository
         private readonly ApiContext _db;
         private readonly int _appSettingsConfiguration;
         
-        public ShawarmaRepository(ApiContext context, IConfiguration configuration)
+        public ShawarmaRepository
+        (
+            ApiContext context, 
+            IConfiguration configuration
+        )
         {
             _db = context;
             _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
@@ -25,7 +29,8 @@ namespace Infrastructure.Repository
         {
             var shawarmas = await _db.Shawarmas
                 .OrderBy(s => s.Id)
-                .Where(s => s.IsActual == true).ToListAsync();
+                .Where(s => s.IsActual == true)
+                .ToListAsync();
             return shawarmas; 
         }
 
@@ -78,13 +83,18 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<Shawarma>> ApplyPaging(ICollection<Shawarma> source, int pageSize, int page = 1)
         {
-            var shawarmas = source.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var shawarmas = source
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
             return shawarmas;
         }
 
         public async Task<ICollection<Shawarma>> GetList()
         {
-            var shawarmas = await _db.Shawarmas.OrderBy(u => u.Id).ToListAsync();
+            var shawarmas = await _db.Shawarmas
+                .OrderBy(u => u.Id)
+                .ToListAsync();
             return shawarmas;
         }
 
@@ -97,6 +107,11 @@ namespace Infrastructure.Repository
                 source = await GetList();
             var result = await ApplyPaging(source, _appSettingsConfiguration, page);
             return result;
+        }
+        
+        public Task<ICollection<Shawarma>> GetPage(int pageSize, int page = 1)
+        {
+            throw new NotImplementedException();
         }
     }
 }

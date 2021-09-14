@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
 using Infrastructure.Result;
-using Microsoft.AspNetCore.Http;
 using Models.User;
 
 namespace API.Controllers
@@ -12,28 +11,28 @@ namespace API.Controllers
     {
         private readonly IRoleService _roleService;
         private readonly AuthController _authController;
-        private readonly IJwtService _jwtService;
         private readonly IAccountService _accountService;
         private readonly IAuthService _authService;
-
+        private readonly IJwtService _jwtService;
+        
         public AccountController
         (
             IRoleService roleService,
-            IJwtService jwtService,
             IAuthService authService,
-            IAccountService accountService
+            IAccountService accountService,
+            IJwtService jwtService
         )
         {
             _roleService = roleService;
-            _jwtService = jwtService;
             _authService = authService;
-            _authController = new AuthController(_authService);
+            _jwtService = jwtService;
+            _authController = new AuthController(authService, jwtService);
             _accountService = accountService;
         }
         
         public async Task<ActionResult> IndexAdmin()
         {
-            var user = await VerifyUser();
+            var user = await _authController.VerifyJwt();
             
             if (user.ErrorType.HasValue)
                 return Unauthorized();
@@ -44,7 +43,7 @@ namespace API.Controllers
 
         public async Task<ActionResult> IndexClient()
         {
-            var user = await VerifyUser();
+            var user = await _authController.VerifyJwt();
 
             if (user.ErrorType.HasValue)
                 return Unauthorized();
@@ -59,7 +58,7 @@ namespace API.Controllers
             if (user.ErrorType.HasValue)
                 return user;
             
-            CreateAndSaveJwt(user);
+            await _authController.CreateAndSaveJwt(dto);
 
             return user.Data.IdRole switch
             {
@@ -92,7 +91,7 @@ namespace API.Controllers
         public async Task<JsonResult> GetDataForOrder(string rows)
         {
             var length = rows.Length;
-            var user = await VerifyUser();
+            var user = await _authController.VerifyJwt();
 
             if (length < 3 || user.ErrorType.HasValue)
                 return Json(false);
@@ -109,7 +108,7 @@ namespace API.Controllers
         /// <returns></returns>
         public async Task<IActionResult> GetShawarmaList(int page = 1)
         {
-            var user = await VerifyUser();
+            var user = await _authController.VerifyJwt();
             var viewModel = await _accountService.GetPage(false, page);
             
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
@@ -122,7 +121,7 @@ namespace API.Controllers
         /// <returns></returns>
         public async Task<IActionResult> GetShawarmasForClient(int page = 1)
         {
-            var user = await VerifyUser();
+            var user = await _authController.VerifyJwt();
             var viewModel = await _accountService.GetPage(true, page);
             
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
@@ -134,7 +133,7 @@ namespace API.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Register()
         {
-            ViewBag.Roles =  await _roleService.GetRolesSelectList();
+            ViewBag.Roles =  await _roleService.GetSelectList();
             return View();
         }
         
@@ -151,35 +150,10 @@ namespace API.Controllers
         /// Выход
         /// </summary>
         /// <returns></returns>
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            Response.Cookies.Delete("jwt");
+            await _authController.Logout();
             return RedirectToAction("Login");
-        }
-
-        /// <summary>
-        /// Верификация пользователя по токену
-        /// </summary>
-        /// <returns></returns>
-        private async Task<ResultContainer<UserResponseDto>> VerifyUser()
-        {
-            var jwt = Request.Cookies["jwt"];
-            var user = await _authService.VerifyUserJwt(jwt);
-            return user;
-        }
-        
-        /// <summary>
-        /// Создание и сохранение в сессии токена после успешной аутентификации
-        /// </summary>
-        /// <param name="user"></param>
-        private void CreateAndSaveJwt(ResultContainer<UserResponseDto> user)
-        {
-            var jwt = _jwtService.Generate(user.Data.Id);
-            
-            Response.Cookies.Append("jwt", jwt, new CookieOptions
-            {
-                HttpOnly = true
-            });
         }
     }
 }

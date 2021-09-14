@@ -1,10 +1,8 @@
 ﻿
 namespace Models.Role
 {
-    public class RoleRequestDto
+    public class RoleRequestDto : BaseModel
     {
-        public int Id { get; set; }
         public string Name { get; set; }
-        
     }
 }

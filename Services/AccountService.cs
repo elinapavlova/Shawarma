@@ -37,20 +37,17 @@ namespace Services
         public async void CreateOrder(ResultContainer<UserResponseDto> user, string rows)
         {
             var orderFromJson = JsonSerializer.Deserialize<CreateOrderViewModel[]>(rows);
-            
             var newOrder = new OrderRequestDto()
             {
                 IdStatus = 1,
                 IdUser = user.Data.Id
             };
-            
-            var createdOrder = await _orderService.CreateOrder(newOrder);
-
+            var createdOrder = await _orderService.Create(newOrder);
             var i = 0;
             
             while (orderFromJson != null && i < orderFromJson.Length)
             { 
-                var shawarma = await _shawarmaService.GetShawarmaByName(orderFromJson[i].Name);
+                var shawarma = await _shawarmaService.GetByName(orderFromJson[i].Name);
 
                 var orderShawa = new OrderShawarmaRequestDto
                 {
@@ -59,20 +56,18 @@ namespace Services
                     Number = Convert.ToInt32(orderFromJson[i].Number)
                 };
                 
-                await _orderShawarmaService.CreateOrderShawarma(orderShawa);
+                await _orderShawarmaService.Create(orderShawa);
                 i++;
             }
         }
 
         public async Task<IndexViewModel<ShawarmaResponseDto>> GetPage( bool needOnlyActual, int page = 1)
         {
-            const int pageSize = 2;
             var count = await _shawarmaService.Count();
             var viewPage = 
-                await _shawarmaService.GetShawarmaListByPage(_appSettingsConfiguration, needOnlyActual, page);
+                await _shawarmaService.GetListByPage(_appSettingsConfiguration, needOnlyActual, page);
 
             var pageViewModel = new PageViewModel(count, page, _appSettingsConfiguration);
-            
             var viewModel = new IndexViewModel<ShawarmaResponseDto>
             {
                 PageViewModel = pageViewModel,

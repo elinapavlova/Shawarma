@@ -1,9 +1,8 @@
 ﻿
 namespace Models.Status
 {
-    public class StatusRequestDto
+    public class StatusRequestDto : BaseModel
     {
-        public int Id { get; set; }
         public string Name { get; set; }
     }
 }

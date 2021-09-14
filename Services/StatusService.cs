@@ -14,23 +14,28 @@ namespace Services
         private readonly IStatusRepository _repository;
         private readonly IMapper _mapper;
         
-        public StatusService(IMapper mapper, IStatusRepository repository)
+        public StatusService
+        (
+            IMapper mapper, 
+            IStatusRepository repository
+        )
         {
             _repository = repository;
             _mapper = mapper;
         }
-        public async Task<ResultContainer<ICollection<StatusResponseDto>>> GetStatusList()
+
+        public async Task<ResultContainer<ICollection<StatusResponseDto>>> GetListByPage(int pageSize, int page = 1)
         {
-            var statuses = _mapper.Map<ResultContainer<ICollection<StatusResponseDto>>>
-                (await _repository.GetStatusList());
-            return statuses;
+            var result = _mapper.Map<ResultContainer<ICollection<StatusResponseDto>>>
+                (await _repository.GetPage(pageSize, page));
+            
+            return result;
         }
 
-        public async Task<ResultContainer<StatusResponseDto>> GetStatusById(int id)
+        public async Task<ResultContainer<StatusResponseDto>> GetById(int id)
         {
-            ResultContainer<StatusResponseDto> result = new ResultContainer<StatusResponseDto>();
-            
-            var getStatus = await _repository.GetStatusById(id);
+            var result = new ResultContainer<StatusResponseDto>();
+            var getStatus = await _repository.GetById(id);
             
             if (getStatus == null)
             {
@@ -38,14 +43,14 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.GetStatusById(id));
+            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.GetById(id));
 
             return result;
         }
 
-        public async Task<ResultContainer<StatusResponseDto>> CreateStatus(StatusRequestDto statusDto)
+        public async Task<ResultContainer<StatusResponseDto>> Create(StatusRequestDto statusDto)
         {
-            var getStatus = await GetStatusById(statusDto.Id);
+            var getStatus = await GetById(statusDto.Id);
             
             if (getStatus.Data != null)
             {
@@ -54,36 +59,36 @@ namespace Services
             }
             
             var status = _mapper.Map<Status>(statusDto);
-            var result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.CreateStatus(status));
+            var result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.Create(status));
 
             return result;
         }
 
-        public async Task<ResultContainer<StatusResponseDto>> UpdateStatus(StatusRequestDto statusDto)
+        public async Task<ResultContainer<StatusResponseDto>> Edit(StatusRequestDto statusDto)
         {
-            var getStatus = await GetStatusById(statusDto.Id);
+            var getStatus = await GetById(statusDto.Id);
             ResultContainer<StatusResponseDto> result;
             
             if (getStatus.Data == null)
             {
-                result = _mapper.Map<ResultContainer<StatusResponseDto>>(await CreateStatus(statusDto));
+                result = _mapper.Map<ResultContainer<StatusResponseDto>>(await Create(statusDto));
                 return result;
             }
 
             var status = _mapper.Map<Status>(statusDto);    
-            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.UpdateStatus(status));
+            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.Edit(status));
 
             return result;
         }
 
-        public async Task<ResultContainer<StatusResponseDto>> DeleteStatus(int id)
+        public async Task<ResultContainer<StatusResponseDto>> Delete(int id)
         {
-            var getStatus = await GetStatusById(id);
+            var getStatus = await GetById(id);
             
             if (getStatus.Data == null)
                 return getStatus;
             
-            var result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.DeleteStatus(id));
+            var result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.Delete(id));
             result.Data = null;
 
             return result;

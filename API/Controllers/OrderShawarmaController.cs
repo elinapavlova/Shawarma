@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models.OrderShawarma;
 using Services.Contracts;
 
@@ -13,26 +15,31 @@ namespace API.Controllers
     public class OrderShawarmaController : BaseController
     {
         private readonly IOrderShawarmaService _orderShawarmaService;
-
-        public OrderShawarmaController(IOrderShawarmaService orderShawarmaService)
+        private readonly int _pageSize;
+        public OrderShawarmaController
+        (
+            IOrderShawarmaService orderShawarmaService,
+            IConfiguration configuration
+        )
         {
             _orderShawarmaService = orderShawarmaService;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         /// <summary>
-        /// Gets all shawarmas from orders
+        /// Get all shawarmas from orders
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet]
-        public async Task<ActionResult<ResultContainer<ICollection<OrderShawarmaResponseDto>>>> GetOrderShawarmaList()
+        public async Task<ActionResult<ResultContainer<ICollection<OrderShawarmaResponseDto>>>> GetOrderShawarmaList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<OrderShawarmaResponseDto>>, 
                     ICollection<OrderShawarmaResponseDto>>
-                (_orderShawarmaService.GetOrderShawarmaList());
+                (_orderShawarmaService.GetListByPage(_pageSize, page));
         }
         
         /// <summary>
-        /// Gets shawarmas from order by id
+        /// Get shawarmas from order by id
         /// </summary>
         /// <response code="200">Returns shawarmas from order</response>
         /// <response code="404">If the order or type of shawarmas does not exists</response>
@@ -40,11 +47,11 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> GetOrderShawarmaById(int id)
         {
             return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
-                (_orderShawarmaService.GetOrderShawarmaById(id));
+                (_orderShawarmaService.GetById(id));
         }
         
         /// <summary>
-        /// Creates a shawarma for order
+        /// Create a shawarma for order
         /// </summary>
         /// <param name="orderShawaDto"></param>
         /// <response code="201">Returns the newly created shawarma for order</response>
@@ -58,7 +65,7 @@ namespace API.Controllers
             (OrderShawarmaRequestDto orderShawaDto)
         {
             return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
-                (_orderShawarmaService.CreateOrderShawarma(orderShawaDto));
+                (_orderShawarmaService.Create(orderShawaDto));
         }
         
         /// <summary>
@@ -73,7 +80,7 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<OrderShawarmaResponseDto>>> DeleteOrderShawarma(int id)
         {
             return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
-                (_orderShawarmaService.DeleteOrderShawarma(id));
+                (_orderShawarmaService.Delete(id));
         }
         
         /// <summary>
@@ -90,7 +97,7 @@ namespace API.Controllers
             UpdateOrderShawarma(OrderShawarmaRequestDto orderShawaDto)
         {
             return await ReturnResult<ResultContainer<OrderShawarmaResponseDto>, OrderShawarmaResponseDto>
-                (_orderShawarmaService.UpdateOrderShawarma(orderShawaDto));
+                (_orderShawarmaService.Edit(orderShawaDto));
         }
     }
 }

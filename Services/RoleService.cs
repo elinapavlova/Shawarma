@@ -15,23 +15,34 @@ namespace Services
         private readonly IRoleRepository _repository;
         private readonly IMapper _mapper;
 
-        public RoleService(IRoleRepository repository, IMapper mapper)
+        public RoleService
+        (
+            IRoleRepository repository, 
+            IMapper mapper
+        )
         {
             _repository = repository;
             _mapper = mapper;
         }
-        
-        public async Task<ResultContainer<ICollection<RoleResponseDto>>> GetRoleList()
+
+        public async Task<ResultContainer<ICollection<RoleResponseDto>>> GetListByPage(int pageSize, int page = 1)
         {
-            var roles = _mapper.Map<ResultContainer<ICollection<RoleResponseDto>>>(await _repository.GetRoleList());
+            var result = _mapper.Map<ResultContainer<ICollection<RoleResponseDto>>>
+                (await _repository.GetPage(pageSize, page));
+            
+            return result;
+        }
+
+        public async Task<ResultContainer<ICollection<RoleResponseDto>>> GetList()
+        {
+            var roles = _mapper.Map<ResultContainer<ICollection<RoleResponseDto>>>(await _repository.GetList());
             return roles;
         }
 
-        public async Task<ResultContainer<RoleResponseDto>> GetRoleById(int id)
+        public async Task<ResultContainer<RoleResponseDto>> GetById(int id)
         {
-            ResultContainer<RoleResponseDto> result = new ResultContainer<RoleResponseDto>();
-            
-            var getRole = await _repository.GetRoleById(id);
+            var result = new ResultContainer<RoleResponseDto>();
+            var getRole = await _repository.GetById(id);
             
             if (getRole == null)
             {
@@ -39,14 +50,14 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.GetRoleById(id));
+            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.GetById(id));
 
             return result;
         }
 
-        public async Task<ResultContainer<RoleResponseDto>> CreateRole(RoleRequestDto roleDto)
+        public async Task<ResultContainer<RoleResponseDto>> Create(RoleRequestDto roleDto)
         {
-            var getRole = await GetRoleById(roleDto.Id);
+            var getRole = await GetById(roleDto.Id);
 
             if (getRole.Data != null)
             {
@@ -55,45 +66,44 @@ namespace Services
             }
 
             var role = _mapper.Map<Role>(roleDto);
-            var result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.CreateRole(role));
+            var result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.Create(role));
             
             return result;
         }
 
-        public async Task<ResultContainer<RoleResponseDto>> UpdateRole(RoleRequestDto roleDto)
+        public async Task<ResultContainer<RoleResponseDto>> Edit(RoleRequestDto roleDto)
         {
-            var getRole = await GetRoleById(roleDto.Id);
-            
+            var getRole = await GetById(roleDto.Id);
             ResultContainer<RoleResponseDto> result;
 
             if (getRole.Data == null)
             {
-                result = _mapper.Map<ResultContainer<RoleResponseDto>>(await CreateRole(roleDto));
+                result = _mapper.Map<ResultContainer<RoleResponseDto>>(await Create(roleDto));
                 return result;
             }
             
             var role = _mapper.Map<Role>(roleDto);
-            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.UpdateRole(role));
+            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.Edit(role));
             
             return result;
         }
 
-        public async Task<ResultContainer<RoleResponseDto>> DeleteRole(int id)
+        public async Task<ResultContainer<RoleResponseDto>> Delete(int id)
         {
-            var getRole = await GetRoleById(id);
+            var getRole = await GetById(id);
 
             if (getRole.Data == null)
                 return getRole;
 
-            var result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.DeleteRole(id));
+            var result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.Delete(id));
             result.Data = null;
             
             return result;
         }
         
-        public async Task<SelectList> GetRolesSelectList()
+        public async Task<SelectList> GetSelectList()
         {
-            var roles = await GetRoleList();
+            var roles = await GetList();
             var rolesList = new SelectList(roles.Data, "Id", "Name");
             return rolesList;
         }

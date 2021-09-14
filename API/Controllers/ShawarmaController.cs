@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models.Shawarma;
 using Services.Contracts;
 
@@ -13,14 +15,19 @@ namespace API.Controllers
     public class ShawarmaController : BaseController
     {
         private readonly IShawarmaService _shawarmaService;
-
-        public ShawarmaController(IShawarmaService service)
+        private readonly int _pageSize;
+        public ShawarmaController
+        (
+            IShawarmaService service,
+            IConfiguration configuration
+        )
         {
             _shawarmaService = service;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         /// <summary>
-        /// Gets all shawarmas
+        /// Get all shawarmas
         /// </summary>
         /// <response code="200">Returns all shawarmas</response>
         [HttpGet]
@@ -28,11 +35,11 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<ShawarmaResponseDto>>,
-                ICollection<ShawarmaResponseDto>>(_shawarmaService.GetShawarmaListByPage(2, true, page));;
+                ICollection<ShawarmaResponseDto>>(_shawarmaService.GetListByPage(_pageSize, true, page));;
         }
         
         /// <summary>
-        /// Gets shawarma by id
+        /// Get shawarma by id
         /// </summary>
         /// <response code="200">Returns the shawarma</response>
         /// <response code="404">If the shawarma does not exists</response>
@@ -42,11 +49,11 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> GetShawarmaById(int id)
         {
             return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
-                (_shawarmaService.GetShawarmaById(id));
+                (_shawarmaService.GetById(id));
         }
         
         /// <summary>
-        /// Gets shawarma by name
+        /// Get shawarma by name
         /// </summary>
         /// <response code="200">Returns the shawarma</response>
         /// <response code="404">If the shawarma does not exists</response>
@@ -56,11 +63,11 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> GetShawarmaByName(string name)
         {
             return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
-                (_shawarmaService.GetShawarmaByName(name));
+                (_shawarmaService.GetByName(name));
         }
         
         /// <summary>
-        /// Creates a shawarma
+        /// Create a shawarma
         /// </summary>
         /// <param name="shawarmaDto"></param>
         /// <response code="201">Returns the newly created shawarma</response>
@@ -73,7 +80,7 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
         {
             return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
-                (_shawarmaService.CreateShawarma(shawarmaDto));
+                (_shawarmaService.Create(shawarmaDto));
         }
         
         /// <summary>
@@ -89,7 +96,7 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> DeleteShawarma(int id)
         {
             return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
-                (_shawarmaService.DeleteShawarma(id));
+                (_shawarmaService.Delete(id));
         }
         
         /// <summary>
@@ -105,7 +112,7 @@ namespace API.Controllers
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
         {
             return await ReturnResult<ResultContainer<ShawarmaResponseDto>, ShawarmaResponseDto>
-                (_shawarmaService.UpdateShawarma(shawarmaDto));
+                (_shawarmaService.Edit(shawarmaDto));
         }
     }
 }

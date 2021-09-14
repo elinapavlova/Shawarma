@@ -8,11 +8,12 @@ namespace Services.Contracts
 {
     public interface IRoleService
     {
-        Task<ResultContainer<ICollection<RoleResponseDto>>> GetRoleList();
-        Task<ResultContainer<RoleResponseDto>> GetRoleById(int id);
-        Task<SelectList> GetRolesSelectList();
-        Task<ResultContainer<RoleResponseDto>> CreateRole(RoleRequestDto role);
-        Task<ResultContainer<RoleResponseDto>>UpdateRole(RoleRequestDto role);
-        Task<ResultContainer<RoleResponseDto>> DeleteRole(int id);
+        Task<ResultContainer<ICollection<RoleResponseDto>>> GetListByPage(int pageSize, int page = 1);
+        Task<ResultContainer<ICollection<RoleResponseDto>>> GetList();
+        Task<ResultContainer<RoleResponseDto>> GetById(int id);
+        Task<SelectList> GetSelectList();
+        Task<ResultContainer<RoleResponseDto>> Create(RoleRequestDto role);
+        Task<ResultContainer<RoleResponseDto>>Edit(RoleRequestDto role);
+        Task<ResultContainer<RoleResponseDto>> Delete(int id);
     }
 }

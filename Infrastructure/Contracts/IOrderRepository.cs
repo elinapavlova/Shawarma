@@ -5,13 +5,9 @@ using Models.Order;
 
 namespace Infrastructure.Contracts
 {
-    public interface IOrderRepository
+    public interface IOrderRepository : IBaseRepository<Order>
     {
-        Task<ICollection<Order>> GetOrderList();
-        Task<ICollection<Order>> GetActualOrderList(DateTime date);
-        Task<Order> CreateOrder(Order order);
-        Task<Order> UpdateOrder(Order order);
-        Task<Order> DeleteOrder(int id);
-        Task<Order> GetOrderById(int id);
+        Task<ICollection<Order>> GetActualList(DateTime date);
+        Task<ICollection<Order>> GetActualListByPage(DateTime date, int pageSize, int page = 1);
     }
 }

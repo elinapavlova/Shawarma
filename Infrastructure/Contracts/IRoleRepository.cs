@@ -4,16 +4,7 @@ using Models.Role;
 
 namespace Infrastructure.Contracts
 {
-    public interface IRoleRepository
+    public interface IRoleRepository : IBaseRepository<Role>
     {
-        Task<ICollection<Role>> GetRoleList();
-
-        Task<Role> CreateRole(Role role);
-        
-        Task<Role> UpdateRole(Role role);
-        
-        Task<Role> DeleteRole(int id);
-
-        Task<Role> GetRoleById(int id);
     }
 }

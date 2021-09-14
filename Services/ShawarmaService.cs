@@ -14,13 +14,17 @@ namespace Services
         private readonly IShawarmaRepository _repository;
         private readonly IMapper _mapper;
         
-        public ShawarmaService(IShawarmaRepository repository, IMapper mapper)
+        public ShawarmaService
+        (
+            IShawarmaRepository repository, 
+            IMapper mapper
+        )
         {
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetShawarmaListByPage
+        public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetListByPage
             (int pageSize, bool needOnlyActual, int page = 1)
         {
             var result = _mapper.Map<ResultContainer<ICollection<ShawarmaResponseDto>>>
@@ -29,10 +33,9 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaById(int id)
+        public async Task<ResultContainer<ShawarmaResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<ShawarmaResponseDto>();
-            
             var getShawarma = await _repository.GetById(id);
 
             if (getShawarma == null)
@@ -46,10 +49,9 @@ namespace Services
             return result;
         }
         
-        public async Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaByName(string name)
+        public async Task<ResultContainer<ShawarmaResponseDto>> GetByName(string name)
         {
-            ResultContainer<ShawarmaResponseDto> result = new ResultContainer<ShawarmaResponseDto>();
-            
+            var result = new ResultContainer<ShawarmaResponseDto>();
             var getShawarma = await _repository.GetShawarmaByName(name);
 
             if (getShawarma == null)
@@ -69,9 +71,9 @@ namespace Services
             return count;
         }
 
-        public async Task<ResultContainer<ShawarmaResponseDto>> CreateShawarma(ShawarmaRequestDto shawarmaDto)
+        public async Task<ResultContainer<ShawarmaResponseDto>> Create(ShawarmaRequestDto shawarmaDto)
         {
-            var getShawarma = await GetShawarmaByName(shawarmaDto.Name);
+            var getShawarma = await GetByName(shawarmaDto.Name);
 
             if (getShawarma.Data != null)
             {
@@ -85,14 +87,14 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<ShawarmaResponseDto>> UpdateShawarma(ShawarmaRequestDto shawarmaDto)
+        public async Task<ResultContainer<ShawarmaResponseDto>> Edit(ShawarmaRequestDto shawarmaDto)
         {
-            var getShawarma = await GetShawarmaByName(shawarmaDto.Name);
+            var getShawarma = await GetByName(shawarmaDto.Name);
             ResultContainer<ShawarmaResponseDto> result;
             
             if (getShawarma.Data == null)
             {
-                result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await CreateShawarma(shawarmaDto));
+                result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await Create(shawarmaDto));
                 return result;
             }
             
@@ -101,9 +103,9 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<ShawarmaResponseDto>> DeleteShawarma(int id)
+        public async Task<ResultContainer<ShawarmaResponseDto>> Delete(int id)
         {
-            var getShawarma = await GetShawarmaById(id);
+            var getShawarma = await GetById(id);
 
             if (getShawarma.Data == null)
                 return getShawarma;

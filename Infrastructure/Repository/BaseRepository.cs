@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Models;
 
 namespace Infrastructure.Repository
@@ -12,10 +14,15 @@ namespace Infrastructure.Repository
         where TModel : BaseModel
     {
         private readonly ApiContext _context;
-
-        protected BaseRepository(ApiContext context)
+        private readonly int _appSettingsConfiguration;
+        protected BaseRepository
+        (
+            ApiContext context,
+            IConfiguration configuration
+        )
         {
             _context = context;
+            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         protected virtual IQueryable<TModel> GetDataSet()
@@ -52,7 +59,10 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<TModel>> ApplyPaging(ICollection<TModel> source, int pageSize, int page = 1)
         {
-            var data = source.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var data = source
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
             return data;
         }
 
@@ -66,6 +76,13 @@ namespace Infrastructure.Repository
         {
             var count = await GetList();
             return count.Count();
+        }
+
+        public async Task<ICollection<TModel>> GetPage(int pageSize, int page = 1)
+        {
+            var source = await GetList();
+            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
+            return result;
         }
     }
 }

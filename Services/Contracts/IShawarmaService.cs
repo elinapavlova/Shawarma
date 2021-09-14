@@ -7,13 +7,13 @@ namespace Services.Contracts
 {
     public interface IShawarmaService
     {
-        Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetShawarmaListByPage
+        Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetListByPage
             (int pageSize, bool needOnlyActual, int page = 1);
-        Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaById(int id);
-        Task<ResultContainer<ShawarmaResponseDto>> GetShawarmaByName(string name);
+        Task<ResultContainer<ShawarmaResponseDto>> GetById(int id);
+        Task<ResultContainer<ShawarmaResponseDto>> GetByName(string name);
         Task<int> Count();
-        Task<ResultContainer<ShawarmaResponseDto>> CreateShawarma(ShawarmaRequestDto shawarma);
-        Task<ResultContainer<ShawarmaResponseDto>> UpdateShawarma(ShawarmaRequestDto shawarma);
-        Task<ResultContainer<ShawarmaResponseDto>> DeleteShawarma(int id);
+        Task<ResultContainer<ShawarmaResponseDto>> Create(ShawarmaRequestDto shawarma);
+        Task<ResultContainer<ShawarmaResponseDto>> Edit(ShawarmaRequestDto shawarma);
+        Task<ResultContainer<ShawarmaResponseDto>> Delete(int id);
     }
 }

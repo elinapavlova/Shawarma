@@ -19,8 +19,8 @@ namespace Infrastructure.Profiles
             CreateMap<User, ResultContainer<UserResponseDto>>().ForMember("Data", opt
                 => opt.MapFrom(u => u));    
             CreateMap<ICollection<User>, ResultContainer<ICollection<UserResponseDto>>>().ForMember("Data", 
-                opt => 
-                    opt.MapFrom(u => u));
+                opt 
+                    => opt.MapFrom(u => u));
             
             
             CreateMap<OrderRequestDto, Order>();
@@ -29,8 +29,8 @@ namespace Infrastructure.Profiles
             CreateMap<Order, ResultContainer<OrderResponseDto>>().ForMember("Data", opt
                 => opt.MapFrom(o => o));
             CreateMap<ICollection<Order>, ResultContainer<ICollection<OrderResponseDto>>>().ForMember("Data", 
-                opt => 
-                    opt.MapFrom(o => o));            
+                opt 
+                    => opt.MapFrom(o => o));            
             
             
             CreateMap<ShawarmaRequestDto, Shawarma>();
@@ -38,8 +38,8 @@ namespace Infrastructure.Profiles
             CreateMap<Shawarma, ResultContainer<ShawarmaResponseDto>>().ForMember("Data", opt
                 => opt.MapFrom(s => s));
             CreateMap<ICollection<Shawarma>, ResultContainer<ICollection<ShawarmaResponseDto>>>().ForMember("Data", 
-                opt => 
-                    opt.MapFrom(s => s));
+                opt 
+                    => opt.MapFrom(s => s));
             
             
             CreateMap<StatusRequestDto, Status>();
@@ -47,8 +47,8 @@ namespace Infrastructure.Profiles
             CreateMap<Status, ResultContainer<StatusResponseDto>>().ForMember("Data", opt
                  => opt.MapFrom(s => s));
             CreateMap<ICollection<Status>, ResultContainer<ICollection<StatusResponseDto>>>().ForMember("Data", 
-                 opt => 
-                     opt.MapFrom(s => s));      
+                 opt 
+                     => opt.MapFrom(s => s));      
             
             
             CreateMap<OrderShawarmaRequestDto, OrderShawarma>();
@@ -66,8 +66,8 @@ namespace Infrastructure.Profiles
             CreateMap<Role, ResultContainer<RoleResponseDto>>().ForMember("Data", opt
                 => opt.MapFrom(r => r));
             CreateMap<ICollection<Role>, ResultContainer<ICollection<RoleResponseDto>>>().ForMember("Data", 
-                opt => 
-                    opt.MapFrom(r => r));
+                opt 
+                    => opt.MapFrom(r => r));
         }
     }
 }

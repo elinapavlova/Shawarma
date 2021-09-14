@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models.Status;
 using Services.Contracts;
 
@@ -13,27 +15,32 @@ namespace API.Controllers
     public class StatusController : BaseController
     {
         private readonly IStatusService _statusService;
-
-        public StatusController(IStatusService service)
+        private readonly int _pageSize;
+        public StatusController
+        (
+            IStatusService service,
+            IConfiguration configuration
+        )
         {
             _statusService = service;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         /// <summary>
-        /// Gets all statuses
+        /// Get all statuses
         /// </summary>
         /// <response code="200">Returns all statuses</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ResultContainer<ICollection<StatusResponseDto>>>> GetStatusList()
+        public async Task<ActionResult<ResultContainer<ICollection<StatusResponseDto>>>> GetStatusList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<StatusResponseDto>>, ICollection<StatusResponseDto>>
-                (_statusService.GetStatusList());
+                (_statusService.GetListByPage(_pageSize, page));
         }
         
         
         /// <summary>
-        /// Gets status by id
+        /// Get status by id
         /// </summary>
         /// <response code="200">Returns the status</response>
         /// <response code="404">If the status does not exists</response>
@@ -43,11 +50,11 @@ namespace API.Controllers
         public async Task<ActionResult<StatusResponseDto>> GetStatusById(int id)
         {
             return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
-                (_statusService.GetStatusById(id));
+                (_statusService.GetById(id));
         }
         
         /// <summary>
-        /// Creates a status
+        /// Create a status
         /// </summary>
         /// <param name="statusDto"></param>
         /// <response code="201">Returns the newly created status</response>
@@ -60,7 +67,7 @@ namespace API.Controllers
         public async Task<ActionResult<StatusRequestDto>> CreateStatus(StatusRequestDto statusDto)
         {
             return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
-                (_statusService.CreateStatus(statusDto));
+                (_statusService.Create(statusDto));
         }
         
         
@@ -77,7 +84,7 @@ namespace API.Controllers
         public async Task<IActionResult> DeleteStatus(int id)
         {
             return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
-                (_statusService.DeleteStatus(id));
+                (_statusService.Delete(id));
         }
         
         /// <summary>
@@ -93,7 +100,7 @@ namespace API.Controllers
         public async Task<IActionResult> UpdateStatus(StatusRequestDto statusDto)
         {
             return await ReturnResult<ResultContainer<StatusResponseDto>, StatusResponseDto>
-                (_statusService.UpdateStatus(statusDto));
+                (_statusService.Edit(statusDto));
         }
     }
 }

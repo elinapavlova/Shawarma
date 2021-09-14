@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models.Role;
 using Services.Contracts;
 
@@ -13,27 +15,32 @@ namespace API.Controllers
     public class RoleController : BaseController
     {
         private readonly IRoleService _roleService;
-
-        public RoleController(IRoleService service)
+        private readonly int _pageSize;
+        public RoleController
+        (
+            IRoleService service,
+            IConfiguration configuration
+        )
         {
             _roleService = service;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
        
         /// <summary>
-        /// Gets all roles
+        /// Get all roles
         /// </summary>
         /// <response code="200">Returns all roles</response>
         /// <returns>Collection of roles</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ResultContainer<ICollection<RoleResponseDto>>>> GetRoleList()
+        public async Task<ActionResult<ResultContainer<ICollection<RoleResponseDto>>>> GetRoleList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<RoleResponseDto>>, ICollection<RoleResponseDto>>
-                (_roleService.GetRoleList());
+                (_roleService.GetListByPage(_pageSize, page));
         }
 
         /// <summary>
-        /// Gets role by id
+        /// Get role by id
         /// </summary>
         /// <response code="200">Returns the role</response>
         /// <response code="404">If the role does not exists</response>
@@ -44,11 +51,11 @@ namespace API.Controllers
         public async Task<ActionResult<RoleResponseDto>> GetRoleById(int id)
         {
             return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
-                (_roleService.GetRoleById(id));
+                (_roleService.GetById(id));
         }
 
         /// <summary>
-        /// Creates a role
+        /// Create a role
         /// </summary>
         /// <param name="roleDto"></param>
         /// /// <response code="201">Returns the newly created role</response>
@@ -61,7 +68,7 @@ namespace API.Controllers
         public async Task<ActionResult<RoleRequestDto>> CreateRole(RoleRequestDto roleDto)
         {
             return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
-                (_roleService.CreateRole(roleDto));
+                (_roleService.Create(roleDto));
         }
 
         /// <summary>
@@ -77,7 +84,7 @@ namespace API.Controllers
         public async Task<IActionResult> DeleteRole(int id)
         {
             return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
-                (_roleService.DeleteRole(id));
+                (_roleService.Delete(id));
         }
         
         /// <summary>
@@ -94,7 +101,7 @@ namespace API.Controllers
         public async Task<IActionResult> UpdateRole(RoleRequestDto roleDto)
         {
             return await ReturnResult<ResultContainer<RoleResponseDto>, RoleResponseDto>
-                (_roleService.UpdateRole(roleDto));
+                (_roleService.Edit(roleDto));
         }
     }
 }

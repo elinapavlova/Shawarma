@@ -8,11 +8,13 @@ namespace Services.Contracts
 {
     public interface IOrderService
     {
-        Task<ResultContainer<ICollection<OrderResponseDto>>> GetOrderList();
-        Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualOrderList(DateTime date);
-        Task<ResultContainer<OrderResponseDto>> GetOrderById(int id);
-        Task<ResultContainer<OrderResponseDto>> CreateOrder(OrderRequestDto order);
-        Task<ResultContainer<OrderResponseDto>> UpdateOrder(OrderRequestDto order);
-        Task<ResultContainer<OrderResponseDto>> DeleteOrder(int id);
+        Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualListByPage
+            (DateTime date, int pageSize, int page = 1);
+        Task<ResultContainer<ICollection<OrderResponseDto>>> GetListByPage(int pageSize, int page = 1);
+        Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualList(DateTime date);
+        Task<ResultContainer<OrderResponseDto>> GetById(int id);
+        Task<ResultContainer<OrderResponseDto>> Create(OrderRequestDto order);
+        Task<ResultContainer<OrderResponseDto>> Edit(OrderRequestDto order);
+        Task<ResultContainer<OrderResponseDto>> Delete(int id);
     }
 }

@@ -7,10 +7,10 @@ namespace Services.Contracts
 {
     public interface IStatusService
     {
-        Task<ResultContainer<ICollection<StatusResponseDto>>> GetStatusList();
-        Task<ResultContainer<StatusResponseDto>> GetStatusById(int id);
-        Task<ResultContainer<StatusResponseDto>> CreateStatus(StatusRequestDto status);
-        Task<ResultContainer<StatusResponseDto>> UpdateStatus(StatusRequestDto status);
-        Task<ResultContainer<StatusResponseDto>> DeleteStatus(int id);
+        Task<ResultContainer<ICollection<StatusResponseDto>>> GetListByPage(int pageSize, int page = 1);
+        Task<ResultContainer<StatusResponseDto>> GetById(int id);
+        Task<ResultContainer<StatusResponseDto>> Create(StatusRequestDto status);
+        Task<ResultContainer<StatusResponseDto>> Edit(StatusRequestDto status);
+        Task<ResultContainer<StatusResponseDto>> Delete(int id);
     }
 }

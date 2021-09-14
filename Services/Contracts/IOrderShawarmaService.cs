@@ -7,10 +7,10 @@ namespace Services.Contracts
 {
     public interface IOrderShawarmaService
     {
-        Task<ResultContainer<ICollection<OrderShawarmaResponseDto>>> GetOrderShawarmaList();
-        Task<ResultContainer<OrderShawarmaResponseDto>> GetOrderShawarmaById(int id);
-        Task<ResultContainer<OrderShawarmaResponseDto>> CreateOrderShawarma(OrderShawarmaRequestDto shawarma);
-        Task<ResultContainer<OrderShawarmaResponseDto>> UpdateOrderShawarma(OrderShawarmaRequestDto shawarma);
-        Task<ResultContainer<OrderShawarmaResponseDto>> DeleteOrderShawarma(int id);
+        Task<ResultContainer<ICollection<OrderShawarmaResponseDto>>> GetListByPage(int pageSize, int page = 1);
+        Task<ResultContainer<OrderShawarmaResponseDto>> GetById(int id);
+        Task<ResultContainer<OrderShawarmaResponseDto>> Create(OrderShawarmaRequestDto shawarma);
+        Task<ResultContainer<OrderShawarmaResponseDto>> Edit(OrderShawarmaRequestDto shawarma);
+        Task<ResultContainer<OrderShawarmaResponseDto>> Delete(int id);
     }
 }

@@ -4,16 +4,7 @@ using Models.OrderShawarma;
 
 namespace Infrastructure.Contracts
 {
-    public interface IOrderShawarmaRepository
+    public interface IOrderShawarmaRepository : IBaseRepository<OrderShawarma>
     {
-        Task<ICollection<OrderShawarma>> GetOrderShawarmaList();
-
-        Task<OrderShawarma> CreateOrderShawarma(OrderShawarma orderShawarma);
-        
-        Task<OrderShawarma> UpdateOrderShawarma(OrderShawarma orderShawarma);
-        
-        Task<OrderShawarma> DeleteOrderShawarma(int id);
-
-        Task<OrderShawarma> GetOrderShawarmaById(int id);
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using API.Controllers;
 using AutoMapper;
 using Database;
 using Microsoft.AspNetCore.Builder;
@@ -29,8 +30,7 @@ namespace API
         }
 
         public IConfiguration Configuration { get; }
-
-
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
@@ -54,10 +54,9 @@ namespace API
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAuthService, AuthService>();
-            //services.AddScoped<IGenericService, GenericService>();
 
             services.AddControllers();
-            
+
             var mapperConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new AppProfile());
@@ -68,27 +67,27 @@ namespace API
             var connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection));
             
-             
-             var key = Encoding.ASCII.GetBytes(Configuration["AppSettings:Secret"]);
-             services.AddAuthentication(x =>
-                 {
+            var key = Encoding.ASCII.GetBytes(Configuration["AppSettings:Secret"]);
+            services.AddAuthentication(x =>
+                {
                      x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                      x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                 })
-                 .AddJwtBearer(x =>
-                 {
-                     x.RequireHttpsMetadata = false;
-                     x.SaveToken = true;
-                     x.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         ValidateIssuerSigningKey = true,
-                         IssuerSigningKey = new SymmetricSecurityKey(key),
-                         ValidateIssuer = false,
-                         ValidateAudience = false,
-                         RequireExpirationTime = false,
-                         ValidateLifetime = false
-                     };
-                 });
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters 
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        RequireExpirationTime = false,
+                        ValidateLifetime = false
+                         
+                    };
+                });
 
              var securityScheme = new OpenApiSecurityScheme
              {
@@ -136,7 +135,7 @@ namespace API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
             }
-
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();

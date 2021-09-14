@@ -23,7 +23,7 @@ namespace Services
         
         public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
         {
-            var getUserByEmail = await _userService.GetUserByEmail(username);
+            var getUserByEmail = await _userService.GetByEmail(username);
 
             if (getUserByEmail.Data == null)
             {
@@ -41,7 +41,7 @@ namespace Services
             return res;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> VerifyUserJwt(string jwt)
+        public async Task<ResultContainer<UserResponseDto>> VerifyJwt(string jwt)
         {
             var user = new ResultContainer<UserResponseDto>();
 
@@ -60,21 +60,19 @@ namespace Services
             }
             
             var userId = int.Parse(token.Issuer);
-            
-            user = await _userService.GetUserById(userId);
-
+            user = await _userService.GetById(userId);
             return user;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> LoginUser(UserLoginDto dto)
+        public async Task<ResultContainer<UserResponseDto>> Login(UserLoginDto dto)
         {
             var user = await VerifyUser(dto.Email, dto.Password);
             return user;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> RegisterUser(UserRequestDto dto)
+        public async Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto)
         {
-            var user = await _userService.GetUserByEmail(dto.Email);
+            var user = await _userService.GetByEmail(dto.Email);
 
             // Если пользователь существует
             if (user.Data != null)
@@ -83,7 +81,7 @@ namespace Services
                 return user;
             }
 
-            var result = await _userService.CreateUser(dto);
+            var result = await _userService.Create(dto);
             
             return result;
         }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models.Order;
 using Services.Contracts;
 
@@ -14,36 +15,42 @@ namespace API.Controllers
     public class OrderController : BaseController
     {
         private readonly IOrderService _orderService;
-
-        public OrderController(IOrderService orderService)
+        private readonly int _pageSize;
+        public OrderController
+        (
+            IOrderService orderService,
+            IConfiguration configuration
+        )
         {
             _orderService = orderService;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         /// <summary>
-        /// Gets all orders
+        /// Get all orders
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet]
-        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetOrderList()
+        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetOrderList(int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
-                (_orderService.GetOrderList());
+                (_orderService.GetListByPage(_pageSize, page));
         }
         
         /// <summary>
-        /// Gets all actual (today) orders
+        /// Get all actual (today) orders
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet("{date:datetime}")]
-        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetActualOrderList(DateTime date)
+        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetActualOrderList
+            (DateTime date, int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
-                (_orderService.GetActualOrderList(date));
+                (_orderService.GetActualListByPage(DateTime.Today, _pageSize, page));
         }
         
         /// <summary>
-        /// Gets order by id
+        /// Get order by id
         /// </summary>
         /// <response code="200">Returns the order</response>
         /// <response code="404">If the order does not exists</response>
@@ -51,11 +58,11 @@ namespace API.Controllers
         public async Task<ActionResult<OrderResponseDto>> GetOrderById(int id)
         {
             return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
-                (_orderService.GetOrderById(id));
+                (_orderService.GetById(id));
         }
         
         /// <summary>
-        /// Creates a order
+        /// Create a order
         /// </summary>
         /// <param name="orderDto"></param>
         /// <response code="201">Returns the newly created order</response>
@@ -68,7 +75,7 @@ namespace API.Controllers
         public async Task<ActionResult<OrderResponseDto>> CreateOrder(OrderRequestDto orderDto)
         {
             return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
-                ( _orderService.CreateOrder(orderDto));
+                ( _orderService.Create(orderDto));
         }
         
         /// <summary>
@@ -83,7 +90,7 @@ namespace API.Controllers
         public async Task<ActionResult<OrderResponseDto>> DeleteOrder(int id)
         {
             return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
-                (_orderService.DeleteOrder(id));
+                (_orderService.Delete(id));
         }
         
         /// <summary>
@@ -99,7 +106,7 @@ namespace API.Controllers
         public async Task<ActionResult<OrderResponseDto>> UpdateOrder(OrderRequestDto orderDto)
         {
             return await ReturnResult<ResultContainer<OrderResponseDto>, OrderResponseDto>
-                (_orderService.UpdateOrder(orderDto));
+                (_orderService.Edit(orderDto));
         }
     }
 }

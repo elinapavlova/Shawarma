@@ -16,28 +16,33 @@ namespace Services
         private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository repository, IMapper mapper, IRoleService roleService)
+        public UserService
+        (
+            IUserRepository repository, 
+            IMapper mapper, 
+            IRoleService roleService
+        )
         {
             _repository = repository;
             _mapper = mapper;
             _roleService = roleService;
         }
         
-        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetUserList()
+        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetList()
         {
             var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
                 (await _repository.GetList());
             return result;
         }
 
-        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetUserListByPage(int pageSize, int page = 1)
+        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetListByPage(int pageSize, int page = 1)
         {
             var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
                 (await _repository.GetPage(pageSize, page));
             return result;
         }
 
-        public async Task<ResultContainer<UserResponseDto>> GetUserById(int id)
+        public async Task<ResultContainer<UserResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<UserResponseDto>();
             var getUser = await _repository.GetById(id);
@@ -52,7 +57,7 @@ namespace Services
             return result;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> GetUserByEmail(string email)
+        public async Task<ResultContainer<UserResponseDto>> GetByEmail(string email)
         {
             var result = new ResultContainer<UserResponseDto>();
             var getUser = await _repository.GetUserByEmail(email);
@@ -67,10 +72,10 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<UserResponseDto>> CreateUser(UserRequestDto userDto)
+        public async Task<ResultContainer<UserResponseDto>> Create(UserRequestDto userDto)
         {
-            var getUser = await GetUserByEmail(userDto.Email);
-            var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+            var getUser = await GetByEmail(userDto.Email);
+            var roleOfUser = await _roleService.GetById(userDto.IdRole);
             
             if (userDto.Email == null)
             {
@@ -91,10 +96,10 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<UserResponseDto>> UpdateUser(UserRequestDto userDto)
+        public async Task<ResultContainer<UserResponseDto>> Edit(UserRequestDto userDto)
         {
-            var getUser = await GetUserById(userDto.Id);
-            var roleOfUser = await _roleService.GetRoleById(userDto.IdRole);
+            var getUser = await GetById(userDto.Id);
+            var roleOfUser = await _roleService.GetById(userDto.IdRole);
             var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
             if (roleOfUser.Data == null)
@@ -114,7 +119,7 @@ namespace Services
             
             if (getUser.Data == null)
             {
-                result = _mapper.Map<ResultContainer<UserResponseDto>>(await CreateUser(userDto));
+                result = _mapper.Map<ResultContainer<UserResponseDto>>(await Create(userDto));
                 return result;
             }
             
@@ -122,9 +127,9 @@ namespace Services
             return result;
         }
 
-        public async Task<ResultContainer<UserResponseDto>> DeleteUser(int id)
+        public async Task<ResultContainer<UserResponseDto>> Delete(int id)
         {
-            var getUser = await GetUserById(id);
+            var getUser = await GetById(id);
 
             if (getUser.Data == null)
                 return getUser;

@@ -1,9 +1,7 @@
-﻿
-namespace Models.Status
+﻿namespace Models.Status
 {
-    public class StatusResponseDto
+    public class StatusResponseDto : BaseModel
     {
-        public int Id { get; set; }
         public string Name { get; set; }
     }
 }

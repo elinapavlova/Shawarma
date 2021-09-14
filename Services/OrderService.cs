@@ -17,32 +17,48 @@ namespace Services
         private readonly IStatusService _statusService;
         private readonly IMapper _mapper;
         
-        public OrderService(IOrderRepository repository, IMapper mapper, IUserService userService,
-            IStatusService statusService)
+        public OrderService
+        (
+            IOrderRepository repository, 
+            IMapper mapper, 
+            IUserService userService,
+            IStatusService statusService
+        )
         {
             _repository = repository;
             _userService = userService;
             _statusService = statusService;
             _mapper = mapper;
         }
-        
-        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetOrderList()
+
+        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualListByPage
+            (DateTime date, int pageSize, int page = 1)
         {
-            var orders = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>(await _repository.GetOrderList());
-            return orders;
+            var result = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
+                (await _repository.GetActualListByPage(date, pageSize, page));
+            
+            return result;
         }
 
-        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualOrderList(DateTime date)
+        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetListByPage(int pageSize, int page = 1)
+        {
+            var result = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
+                (await _repository.GetPage(pageSize, page));
+            
+            return result;
+        }
+
+        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetActualList(DateTime date)
         {
             var orders = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
-                (await _repository.GetActualOrderList(date));
+                (await _repository.GetActualList(date));
             return orders;
         }
         
-        public async Task<ResultContainer<OrderResponseDto>> GetOrderById(int id)
+        public async Task<ResultContainer<OrderResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<OrderResponseDto>();
-            var getOrder = await _repository.GetOrderById(id);
+            var getOrder = await _repository.GetById(id);
 
             if (getOrder == null)
             {
@@ -50,11 +66,11 @@ namespace Services
                 return result;
             }
 
-            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.GetOrderById(id));
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.GetById(id));
             return result;
         }
 
-        public async Task<ResultContainer<OrderResponseDto>> CreateOrder(OrderRequestDto orderDto)
+        public async Task<ResultContainer<OrderResponseDto>> Create(OrderRequestDto orderDto)
         { 
             var result = new ResultContainer<OrderResponseDto>();
             
@@ -65,8 +81,8 @@ namespace Services
                 return result;
             }
             */
-            var user = await _userService.GetUserById(orderDto.IdUser);
-            var getOrder = await GetOrderById(orderDto.Id);
+            var user = await _userService.GetById(orderDto.IdUser);
+            var getOrder = await GetById(orderDto.Id);
 
             if (getOrder.Data != null || user.Data == null)
             {
@@ -76,16 +92,16 @@ namespace Services
 
             var newOrder = _mapper.Map<Order>(orderDto);
             //newOrder.IdStatus = 1;
-            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.CreateOrder(newOrder));
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.Create(newOrder));
 
             return result;
         }
 
-        public async Task<ResultContainer<OrderResponseDto>> UpdateOrder(OrderRequestDto orderDto)
+        public async Task<ResultContainer<OrderResponseDto>> Edit(OrderRequestDto orderDto)
         {
-            var user = await _userService.GetUserById(orderDto.IdUser);
-            var status = await _statusService.GetStatusById(orderDto.IdStatus);
-            var getOrder = await GetOrderById(orderDto.Id);
+            var user = await _userService.GetById(orderDto.IdUser);
+            var status = await _statusService.GetById(orderDto.IdStatus);
+            var getOrder = await GetById(orderDto.Id);
             ResultContainer<OrderResponseDto> result;
 
             if (status.Data == null || getOrder.Data == null)
@@ -96,23 +112,23 @@ namespace Services
 
             if (user.Data == null)
             {
-                result = _mapper.Map<ResultContainer<OrderResponseDto>>(await CreateOrder(orderDto));
+                result = _mapper.Map<ResultContainer<OrderResponseDto>>(await Create(orderDto));
                 return result;
             }
 
             var newOrder = _mapper.Map<Order>(orderDto);
-            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.UpdateOrder(newOrder));
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.Edit(newOrder));
             return result;
         }
 
-        public async Task<ResultContainer<OrderResponseDto>> DeleteOrder(int id)
+        public async Task<ResultContainer<OrderResponseDto>> Delete(int id)
         {
-            var getOrder = await GetOrderById(id);
+            var getOrder = await GetById(id);
 
             if (getOrder.Data == null)
                 return getOrder;
 
-            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.DeleteOrder(id));
+            var result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.Delete(id));
             result.Data = null;
 
             return result;

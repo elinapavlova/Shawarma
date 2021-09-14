@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Models.Status;
 
 namespace Infrastructure.Repository
@@ -10,19 +13,49 @@ namespace Infrastructure.Repository
     public class StatusRepository : IStatusRepository
     {
         private readonly ApiContext _db;
-
-        public StatusRepository(ApiContext context)
+        private readonly int _appSettingsConfiguration;
+        
+        public StatusRepository
+        (
+            ApiContext context,
+            IConfiguration configuration
+        )
         {
             _db = context;
+            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
-        
-        public async Task<ICollection<Status>> GetStatusList()
+
+        public async Task<ICollection<Status>> ApplyPaging(ICollection<Status> source, int pageSize, int page = 1)
         {
-            var statuses = await _db.Statuses.ToListAsync();
+            var statuses = source
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
             return statuses;
         }
 
-        public async Task<Status> CreateStatus(Status status)
+        public async Task<ICollection<Status>> GetList()
+        {
+            var statuses = await _db.Statuses
+                .OrderBy(o => o.Id)
+                .ToListAsync();
+            return statuses;
+        }
+
+        public async Task<int> Count()
+        {
+            var count = await _db.Statuses.CountAsync();
+            return count;
+        }
+
+        public async Task<ICollection<Status>> GetPage(int pageSize, int page = 1)
+        {
+            var source = await GetList();
+            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
+            return result;
+        }
+
+        public async Task<Status> Create(Status status)
         {
             await _db.Statuses.AddAsync(status);
             await _db.SaveChangesAsync();
@@ -30,7 +63,7 @@ namespace Infrastructure.Repository
             return status;
         }
 
-        public async Task<Status> UpdateStatus(Status newStatus)
+        public async Task<Status> Edit(Status newStatus)
         {
             var status = await _db.Statuses.FindAsync(newStatus.Id);
             
@@ -42,7 +75,7 @@ namespace Infrastructure.Repository
             return status;
         }
 
-        public async Task<Status> DeleteStatus(int id)
+        public async Task<Status> Delete(int id)
         {
             var status = await _db.Statuses.FindAsync(id);
             _db.Statuses.Remove(status);
@@ -51,7 +84,7 @@ namespace Infrastructure.Repository
             return status;
         }
 
-        public async Task<Status> GetStatusById(int id)
+        public async Task<Status> GetById(int id)
         {
             var status = await _db.Statuses.FindAsync(id);
             return status;
