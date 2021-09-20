@@ -40,6 +40,12 @@ namespace Services
             return result;
         }
 
+        public async Task<int> Count()
+        {
+            var count = await _repository.Count();
+            return count;
+        }
+
         public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetListByPage(int pageSize, int page = 1)
         {
             var result = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
@@ -81,6 +87,7 @@ namespace Services
                 return result;
             }
             */
+            
             var user = await _userService.GetById(orderDto.IdUser);
             var getOrder = await GetById(orderDto.Id);
 
@@ -91,7 +98,6 @@ namespace Services
             }
 
             var newOrder = _mapper.Map<Order>(orderDto);
-            //newOrder.IdStatus = 1;
             result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.Create(newOrder));
 
             return result;

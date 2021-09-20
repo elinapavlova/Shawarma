@@ -7,6 +7,7 @@ using Models.Role;
 using Models.Shawarma;
 using Models.Status;
 using Models.User;
+using Models.ViewModels;
 
 namespace Infrastructure.Profiles
 {
@@ -25,6 +26,8 @@ namespace Infrastructure.Profiles
             
             CreateMap<OrderRequestDto, Order>();
             CreateMap<Order, OrderResponseDto>();
+            CreateMap<OrderResponseDto, OrderRequestDto>().ForMember("Date", 
+                opt => opt.MapFrom(o => o.Date));
             CreateMap<OrderRequestDto, OrderResponseDto>();
             CreateMap<Order, ResultContainer<OrderResponseDto>>().ForMember("Data", opt
                 => opt.MapFrom(o => o));
@@ -40,6 +43,7 @@ namespace Infrastructure.Profiles
             CreateMap<ICollection<Shawarma>, ResultContainer<ICollection<ShawarmaResponseDto>>>().ForMember("Data", 
                 opt 
                     => opt.MapFrom(s => s));
+            CreateMap<ShawarmaImportViewModel, ShawarmaRequestDto>();
             
             
             CreateMap<StatusRequestDto, Status>();

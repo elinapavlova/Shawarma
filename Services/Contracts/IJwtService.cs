@@ -4,7 +4,7 @@ namespace Services.Contracts
 {
     public interface IJwtService
     {
-        string Generate(int id);
+        string Generate(int id, int idRole);
         JwtSecurityToken Verify(string jwt);
     }
 }

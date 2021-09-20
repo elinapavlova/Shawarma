@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Infrastructure.Result;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Infrastructure.Result;
 using Models.Role;
 
 namespace Services.Contracts

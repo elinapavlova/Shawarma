@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Infrastructure.Result;
@@ -18,8 +19,8 @@ namespace Services
         private readonly IOrderService _orderService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IOrderShawarmaService _orderShawarmaService;
-        private readonly int _appSettingsConfiguration;
-        
+        private readonly int _pageSize;
+
         public AccountService
         (
             IOrderService orderService,
@@ -31,7 +32,7 @@ namespace Services
             _orderService = orderService;
             _shawarmaService = shawarmaService;
             _orderShawarmaService = orderShawarmaService;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         public async void CreateOrder(ResultContainer<UserResponseDto> user, string rows)
@@ -61,19 +62,37 @@ namespace Services
             }
         }
 
-        public async Task<IndexViewModel<ShawarmaResponseDto>> GetPage( bool needOnlyActual, int page = 1)
+        public async Task<IndexViewModel<ShawarmaResponseDto>> GetShawarmaPage(bool needOnlyActual, int page = 1)
         {
             var count = await _shawarmaService.Count();
-            var viewPage = 
-                await _shawarmaService.GetListByPage(_appSettingsConfiguration, needOnlyActual, page);
+            var viewPage = await _shawarmaService.GetListByPage(_pageSize, needOnlyActual, page);
 
-            var pageViewModel = new PageViewModel(count, page, _appSettingsConfiguration);
+            var pageViewModel = new PageViewModel(count, page, _pageSize);
             var viewModel = new IndexViewModel<ShawarmaResponseDto>
             {
                 PageViewModel = pageViewModel,
                 Things = viewPage.Data
             };
 
+            return viewModel;
+        }
+        
+        public async Task<IndexViewModel<OrderResponseDto>> GetOrdersPage( bool needOnlyActual, int page = 1)
+        {
+            var count = await _orderService.Count();
+            ResultContainer<ICollection<OrderResponseDto>> viewPage;
+            
+            if (needOnlyActual)
+                viewPage = await _orderService.GetActualListByPage(DateTime.Today, _pageSize, page);
+            else
+                viewPage = await _orderService.GetListByPage(_pageSize, page);
+            
+            var pageViewModel = new PageViewModel(count, page, _pageSize);
+            var viewModel = new IndexViewModel<OrderResponseDto>
+            {
+                PageViewModel = pageViewModel,
+                Things = viewPage.Data
+            };
             return viewModel;
         }
     }

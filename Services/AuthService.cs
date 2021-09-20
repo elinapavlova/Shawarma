@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Infrastructure.Result;
+using Infrastructure.Validate;
+using Microsoft.Extensions.Configuration;
 using Models.Error;
 using Models.User;
 using Services.Contracts;
@@ -10,15 +13,19 @@ namespace Services
     {
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        
+        private readonly Validator _validator;
+        private readonly IConfiguration _configuration;
         public AuthService
         (
             IUserService userService,
-            IJwtService jwtService
+            IJwtService jwtService,
+            IConfiguration configuration
         )
         {
             _userService = userService;
             _jwtService = jwtService;
+            _configuration = configuration;
+            _validator = new Validator(_configuration);
         }
         
         public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
@@ -73,16 +80,16 @@ namespace Services
         public async Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto)
         {
             var user = await _userService.GetByEmail(dto.Email);
-
-            // Если пользователь существует
-            if (user.Data != null)
+            var address = await _validator.ValidateAddress(dto.Address);
+            var isValidEmail = Validator.EmailIsValid(dto.Email);
+            
+            if (user.Data != null || address != "0" || !isValidEmail)
             {
                 user.ErrorType = ErrorType.BadRequest;
                 return user;
             }
 
             var result = await _userService.Create(dto);
-            
             return result;
         }
     }

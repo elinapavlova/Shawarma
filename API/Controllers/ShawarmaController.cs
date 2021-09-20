@@ -11,6 +11,7 @@ using Services.Contracts;
 namespace API.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
     [Route("api/[controller]")]
     public class ShawarmaController : BaseController
     {
@@ -90,7 +91,7 @@ namespace API.Controllers
         /// <returns></returns>
         /// <response code="204">If the shawarma was deleted successfully</response>
         /// <response code="404">If the shawarma does not exists</response>
-        [Microsoft.AspNetCore.Mvc.HttpDelete("{id:int}")]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ResultContainer<ShawarmaResponseDto>>> DeleteShawarma(int id)
@@ -105,7 +106,7 @@ namespace API.Controllers
         /// <response code="204">If the shawarma was updated successfully</response>
         /// <response code="400">If the shawarma is null</response>
         /// <response code="404">If the shawarma does not exists</response>
-        [Microsoft.AspNetCore.Mvc.HttpPut]
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

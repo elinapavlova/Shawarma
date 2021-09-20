@@ -12,7 +12,8 @@ namespace Database.Configurations
             builder.ToTable("Users").Property(p => p.Email).IsRequired();
             builder.ToTable("Users").Property(p => p.Password).IsRequired();
             builder.ToTable("Users").Property(p => p.UserName).IsRequired();
-
+            builder.ToTable("Users").Property(p => p.Address).IsRequired();
+            
             builder.ToTable("Users")
                 .HasOne(p => p.Role)
                 .WithMany(t => t.Users)

@@ -8,5 +8,6 @@ namespace Models.Order
         public string Comment { get; set; }
         public int IdStatus { get; set; }
         public int IdUser { get; set; }
+        public decimal Cost { get; set; }
     }
 }

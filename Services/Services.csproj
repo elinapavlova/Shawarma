@@ -5,23 +5,23 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ClosedXML" Version="0.95.4" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.9" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.0" />
+      <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
-      <ProjectReference Include="..\Models\Models.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.AspNetCore.Mvc.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-        <HintPath>..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\5.0.8\Microsoft.AspNetCore.Mvc.Core.dll</HintPath>
-      </Reference>
-      <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-        <HintPath>..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\5.0.8\Microsoft.AspNetCore.Mvc.ViewFeatures.dll</HintPath>
+      <Reference Include="Dadata, Version=21.9.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\.nuget\packages\dadata\21.9.0\lib\netstandard2.0\Dadata.dll</HintPath>
       </Reference>
     </ItemGroup>
 

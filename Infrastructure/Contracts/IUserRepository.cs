@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Models.Order;
 using Models.User;
 
 namespace Infrastructure.Contracts
@@ -8,5 +9,6 @@ namespace Infrastructure.Contracts
 
     {
         Task<User> GetUserByEmail(string email);
+        Task<List<Order>> GetOrders(int id);
     }
 }

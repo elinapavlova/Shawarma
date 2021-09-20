@@ -4,6 +4,7 @@ using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Result;
 using Models.Error;
+using Models.Order;
 using Models.OrderShawarma;
 using Services.Contracts;
 
@@ -79,22 +80,24 @@ namespace Services
             foreach (var os in orderShawas.Data)
             {
                 // Если уже существует заказ с таким видом шаурмы, увеличить их количество
-                            
-                if (os.OrderId != orderShawaDto.OrderId || os.ShawarmaId != orderShawaDto.ShawarmaId) continue;
+                if (os.OrderId != orderShawaDto.OrderId || os.ShawarmaId != orderShawaDto.ShawarmaId) 
+                    continue;
                             
                 os.Number += orderShawaDto.Number;
             
                 var newOrderShawa = _mapper.Map<OrderShawarmaRequestDto>(os);
-                
-                var getResult = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                    (await Edit(newOrderShawa));
+                var getResult = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await Edit(newOrderShawa));
                 
                 return getResult;
             }
             
             var orderShawa = _mapper.Map<OrderShawarma>(orderShawaDto);
-            var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>
-                (await _repository.Create(orderShawa));
+            var result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.Create(orderShawa));
+
+            // Увеличение стоимости заказа
+            order.Data.Cost += orderShawa.Number * shawa.Data.Cost;
+            var editOrder = _mapper.Map<OrderResponseDto, OrderRequestDto>(order.Data);
+            await _orderService.Edit(editOrder);
             
             return result;
         }

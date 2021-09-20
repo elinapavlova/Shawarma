@@ -33,6 +33,12 @@ namespace Services
             return result;
         }
 
+        public async Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetList()
+        {
+            var result = _mapper.Map<ResultContainer<ICollection<ShawarmaResponseDto>>>(await _repository.GetList());
+            return result;
+        }
+
         public async Task<ResultContainer<ShawarmaResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<ShawarmaResponseDto>();

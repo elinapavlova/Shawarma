@@ -32,6 +32,14 @@ namespace Services
             return result;
         }
 
+        public async Task<ResultContainer<ICollection<StatusResponseDto>>> GetList()
+        {
+            var result = _mapper.Map<ResultContainer<ICollection<StatusResponseDto>>>
+                (await _repository.GetList());
+            
+            return result;
+        }
+
         public async Task<ResultContainer<StatusResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<StatusResponseDto>();

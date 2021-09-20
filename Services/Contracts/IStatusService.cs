@@ -8,6 +8,7 @@ namespace Services.Contracts
     public interface IStatusService
     {
         Task<ResultContainer<ICollection<StatusResponseDto>>> GetListByPage(int pageSize, int page = 1);
+        Task<ResultContainer<ICollection<StatusResponseDto>>> GetList();
         Task<ResultContainer<StatusResponseDto>> GetById(int id);
         Task<ResultContainer<StatusResponseDto>> Create(StatusRequestDto status);
         Task<ResultContainer<StatusResponseDto>> Edit(StatusRequestDto status);

@@ -11,6 +11,7 @@ using Services.Contracts;
 namespace API.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
     [Route("api/[controller]")]
     public class OrderShawarmaController : BaseController
     {

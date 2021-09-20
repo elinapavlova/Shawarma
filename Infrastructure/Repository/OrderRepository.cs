@@ -13,7 +13,7 @@ namespace Infrastructure.Repository
     public class OrderRepository : IOrderRepository
     {
         private readonly ApiContext _db;
-        private readonly int _appSettingsConfiguration;
+        private readonly int _pageSize;
         public OrderRepository
         (
             ApiContext context,
@@ -21,7 +21,7 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         public async Task<ICollection<Order>> GetActualList(DateTime date)
@@ -51,14 +51,14 @@ namespace Infrastructure.Repository
         public async Task<ICollection<Order>> GetActualListByPage(DateTime date, int pageSize, int page = 1)
         {
             var source = await GetActualList(date);
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
+            var result = await ApplyPaging(source, _pageSize, page);
             return result;
         }
 
         public async Task<ICollection<Order>> GetPage(int pageSize, int page = 1)
         {
             var source = await GetList();
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
+            var result = await ApplyPaging(source, _pageSize, page);
             return result;
         }
 
@@ -68,6 +68,7 @@ namespace Infrastructure.Repository
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
+            
             return shawarmas;
         }
 
@@ -115,6 +116,7 @@ namespace Infrastructure.Repository
             order.Comment = newOrder.Comment;
             order.Date = newOrder.Date;
             order.IdStatus = newOrder.IdStatus;
+            order.Cost = newOrder.Cost;
 
             _db.Orders.Update(order);
             await _db.SaveChangesAsync();

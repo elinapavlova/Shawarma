@@ -1,10 +1,8 @@
-using System;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using API.Controllers;
+using System.Linq;
 using AutoMapper;
 using Database;
+using Export.Services;
+using Export.Services.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -14,11 +12,15 @@ using Microsoft.OpenApi.Models;
 using Infrastructure.Contracts;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Any;
 using Services;
 using Services.Contracts;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API
 {
@@ -55,6 +57,9 @@ namespace API
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAuthService, AuthService>();
 
+            services.AddScoped<IExportActualOrdersToExcelService, ExportActualOrdersToExcelService>();
+            services.AddScoped<IImportShawarmaFromExcelService, ImportShawarmaFromExcelService>();
+
             services.AddControllers();
 
             var mapperConfig = new MapperConfiguration(mc =>
@@ -64,85 +69,93 @@ namespace API
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             
-            var connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection));
             
-            var key = Encoding.ASCII.GetBytes(Configuration["AppSettings:Secret"]);
-            services.AddAuthentication(x =>
-                {
-                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(x =>
-                {
-                    x.RequireHttpsMetadata = false;
-                    x.SaveToken = true;
-                    x.TokenValidationParameters = new TokenValidationParameters 
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        RequireExpirationTime = false,
-                        ValidateLifetime = false
-                         
-                    };
-                });
+            var connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection,  
+                x => x.MigrationsAssembly("Database")));
 
-             var securityScheme = new OpenApiSecurityScheme
-             {
-                 In = ParameterLocation.Header,
-                 Name = "Authorization",
-                 BearerFormat = "Bearer {authToken}",
-                 Description = "JWT Token",
-                 Type = SecuritySchemeType.ApiKey
-             };
-
-            services.AddSwaggerGen(c =>
+            services.AddApiVersioning(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "API", Version = "v1"}); 
-                
-                c.AddSecurityDefinition(
-                    "Bearer", securityScheme
-                );
-                
-                c.AddSecurityRequirement(
-                    new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme, Id = "Bearer"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
-                
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new MediaTypeApiVersionReader("v");
             });
+            services.AddVersionedApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+            
+            services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
         }
         
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public class SwaggerDefaultValues : IOperationFilter
+        {
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                var apiDescription = context.ApiDescription;
+                operation.Deprecated |= apiDescription.IsDeprecated();
+
+                if (operation.Parameters == null)
+                    return;
+                
+                foreach (var parameter in operation.Parameters)
+                {
+                    var description = apiDescription.ParameterDescriptions
+                        .First(p => p.Name == parameter.Name);
+                    
+                    if (parameter.Description == null)
+                        parameter.Description = description.ModelMetadata?.Description;
+
+                    if (parameter.Schema.Default == null && description.DefaultValue != null)
+                        parameter.Schema.Default = new OpenApiString(description.DefaultValue.ToString());
+
+                    parameter.Required |= description.IsRequired;
+                }
+            }
+        }
+        
+        public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+        {
+            private readonly IApiVersionDescriptionProvider _provider;
+            public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) =>
+                _provider = provider;
+            public void Configure(SwaggerGenOptions options)
+            {
+                foreach (var description in _provider.ApiVersionDescriptions) {
+                    options.SwaggerDoc(
+                        description.GroupName,
+                        new OpenApiInfo
+                        {
+                            Title = $"Sample API {description.ApiVersion}",
+                            Version = description.ApiVersion.ToString(),
+                        });
+                }
+            }
+        }
+        
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
+                //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
+                app.UseSwaggerUI(
+                    opt => {
+                        foreach (var description in provider.ApiVersionDescriptions) {
+                            opt.SwaggerEndpoint(
+                                $"/swagger/{description.GroupName}/swagger.json",
+                                description.GroupName.ToUpperInvariant());
+                        }
+                    });
             }
-            
             app.UseHttpsRedirection();
-
             app.UseRouting();
-            
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Database;
 using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Models.Order;
 using Models.User;
 
 namespace Infrastructure.Repository
@@ -64,7 +65,32 @@ namespace Infrastructure.Repository
         public async Task<User> GetById(int id)
         {
             var user = await _db.Users.FindAsync(id);
+
+            if (user == null) 
+                return null;
+            
+            var orders = await GetOrders(id);
+            user.Orders = orders;
+
             return user;
+        }
+
+        public async Task<List<Order>> GetOrders(int id)
+        {
+            var orders = await _db.Orders
+                .Where(o => o.IdUser == id)
+                .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                var orde = await _db.OrderShawarmas
+                    .Where(os => os.OrderId == order.Id)
+                    .ToListAsync();
+                
+                order.OrderShawarmas = orde;
+            }
+            
+            return orders;
         }
 
         public async Task<User> Create(User user)
@@ -82,6 +108,7 @@ namespace Infrastructure.Repository
             user.Password = newUser.Password;
             user.UserName = newUser.UserName;
             user.IdRole = newUser.IdRole;
+            user.Address = newUser.Address;
 
             _db.Users.Update(user);
             await _db.SaveChangesAsync();

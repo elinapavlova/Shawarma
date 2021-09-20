@@ -11,6 +11,7 @@ using Services.Contracts;
 namespace API.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
     [Route("api/[controller]")]
     public class OrderController : BaseController
     {
@@ -25,7 +26,7 @@ namespace API.Controllers
             _orderService = orderService;
             _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
-        
+
         /// <summary>
         /// Get all orders
         /// </summary>

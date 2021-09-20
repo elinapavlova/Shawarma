@@ -8,9 +8,21 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="10.1.1" />
+        <PackageReference Include="ClosedXML" Version="0.95.4" />
+        <PackageReference Include="Dadata" Version="21.9.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="NLog" Version="4.7.10" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="4.13.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
@@ -19,6 +31,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Database\Database.csproj" />
+      <ProjectReference Include="..\ExcelService\ExcelService.csproj" />
       <ProjectReference Include="..\Models\Models.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
     </ItemGroup>

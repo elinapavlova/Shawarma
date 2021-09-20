@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Mvc;
 using Models.Error;
-using Models.User;
 
 namespace API.Controllers
 {

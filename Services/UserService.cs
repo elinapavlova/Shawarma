@@ -82,10 +82,8 @@ namespace Services
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;
             }
-            
-            var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
-            if (getUser.Data != null || roleOfUser.Data == null || !isValidEmail)
+            if (getUser.Data != null || roleOfUser.Data == null)
             {
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;

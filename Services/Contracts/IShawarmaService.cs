@@ -9,6 +9,7 @@ namespace Services.Contracts
     {
         Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetListByPage
             (int pageSize, bool needOnlyActual, int page = 1);
+        Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetList();
         Task<ResultContainer<ShawarmaResponseDto>> GetById(int id);
         Task<ResultContainer<ShawarmaResponseDto>> GetByName(string name);
         Task<int> Count();

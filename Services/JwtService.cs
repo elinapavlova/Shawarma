@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,13 +18,18 @@ namespace Services
             _secretKey = configuration["AppSettings:Secret"];
         }
         
-        public string Generate(int id)
+        public string Generate(int id, int idRole)
         {
+            IEnumerable<Claim> claims = new List<Claim>
+            {
+                new ("idRole", idRole.ToString())
+            };
+
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
             var header = new JwtHeader(credentials);
             var payload = new JwtPayload
-                (id.ToString(), null, null, null, DateTime.Today.AddDays(1)); // 1 day
+                (id.ToString(), null, claims,null, DateTime.Today.AddDays(1)); // 1 day
             var securityToken = new JwtSecurityToken(header, payload);
 
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
