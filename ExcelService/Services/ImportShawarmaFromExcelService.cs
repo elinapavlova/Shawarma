@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Models.Shawarma;
 using Models.ViewModels;
 using OfficeOpenXml;
+using OfficeOpenXml.Packaging.Ionic.Zip;
 using Services.Contracts;
 
 namespace Export.Services
@@ -34,7 +36,15 @@ namespace Export.Services
             {
                 // Если файл пустой
                 if (file?.Length <= 0 || file == null)
-                    throw new Exception("Пустой файл!");
+                    throw new BadReadException("Пустой файл!");
+
+                var extension = Path.GetExtension(file.FileName);
+
+                // Если не excel-страница
+                if (!extension.ToLower().Equals(".xlsx"))
+                {
+                    throw new BadReadException("Недопустимое расширение файла!");
+                }
                 
                 var stream = file.OpenReadStream();
 

@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using Export.Services.Contracts;
 using Microsoft.AspNetCore.Http;
 
@@ -28,21 +27,13 @@ namespace API.Controllers
         public async Task<byte[]> ExportToExcel()
         {
             var result = await _exportService.ExportToExcel();
-            /*
-            return new FileContentResult(result, 
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            {
-                FileDownloadName = $"orders_{DateTime.Now}.xlsx"
-            };
-            */
             return result;
         }
         
         [HttpPost]
-        public async Task<ActionResult> ImportFromExcel(IFormFile file)
+        public async Task ImportFromExcel(IFormFile file)
         {
             await _importService.ImportFromExcel(file);
-            return RedirectToAction("GetShawarmaList", "Account");
         }
     }
 }
