@@ -1,4 +1,3 @@
-using System.Linq;
 using AutoMapper;
 using Database;
 using Export.Services;
@@ -8,16 +7,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using Infrastructure.Contracts;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
+using Infrastructure.SwaggerConfiguration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
 using Services;
 using Services.Contracts;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -87,55 +85,9 @@ namespace API
                 options.SubstituteApiVersionInUrl = true;
             });
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-            
             services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
         }
-        
-        public class SwaggerDefaultValues : IOperationFilter
-        {
-            public void Apply(OpenApiOperation operation, OperationFilterContext context)
-            {
-                var apiDescription = context.ApiDescription;
-                operation.Deprecated |= apiDescription.IsDeprecated();
 
-                if (operation.Parameters == null)
-                    return;
-                
-                foreach (var parameter in operation.Parameters)
-                {
-                    var description = apiDescription.ParameterDescriptions
-                        .First(p => p.Name == parameter.Name);
-                    
-                    if (parameter.Description == null)
-                        parameter.Description = description.ModelMetadata?.Description;
-
-                    if (parameter.Schema.Default == null && description.DefaultValue != null)
-                        parameter.Schema.Default = new OpenApiString(description.DefaultValue.ToString());
-
-                    parameter.Required |= description.IsRequired;
-                }
-            }
-        }
-        
-        public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
-        {
-            private readonly IApiVersionDescriptionProvider _provider;
-            public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) =>
-                _provider = provider;
-            public void Configure(SwaggerGenOptions options)
-            {
-                foreach (var description in _provider.ApiVersionDescriptions) {
-                    options.SwaggerDoc(
-                        description.GroupName,
-                        new OpenApiInfo
-                        {
-                            Title = $"Sample API {description.ApiVersion}",
-                            Version = description.ApiVersion.ToString(),
-                        });
-                }
-            }
-        }
-        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
