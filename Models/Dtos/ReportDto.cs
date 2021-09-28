@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Models.Dtos
 {
@@ -7,6 +6,7 @@ namespace Models.Dtos
     {
         public int Id { get; set; }
         public DateTime WasCreated { get; set; }
-        public List<ReportOrder> Orders { get; set; } 
+        public string FileName { get; set; }
+        public byte[] Document { get; set; }
     }
 }

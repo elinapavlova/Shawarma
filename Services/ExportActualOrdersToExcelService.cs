@@ -16,22 +16,23 @@ namespace Services
     public class ExportActualOrdersToExcelService : IExportActualOrdersToExcelService
     {
         private readonly IReportService _reportService;
-        private readonly IReportOrderService _reportOrderService;
-        
+
         public ExportActualOrdersToExcelService
         (
-            IReportService reportService,
-            IReportOrderService reportOrderService
+            IReportService reportService
         )
         {
             _reportService = reportService;
-            _reportOrderService = reportOrderService;
         }
         
         public async Task<byte[]> ExportToExcel(ICollection<ExportActualOrdersViewModel> json)
         {
             var i = 0; // счетчик строк
-            var report = new ReportDto { WasCreated = DateTime.Now};
+            var report = new ReportDto
+            {
+                WasCreated = DateTime.Now,
+                FileName = $"orders_{DateTime.Now}.xlsx"
+            };
 
             using var workbook = new XLWorkbook(XLEventTracking.Disabled);
             var worksheet = CreateWorksheet(workbook);
@@ -50,8 +51,8 @@ namespace Services
                 stream.Flush();
                 
                 using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-                //var reportId = await CreateReport(report);
-                //await CreateReportOrders(reportId, json);
+                report.Document = stream.ToArray();
+                await CreateReport(report);
                 scope.Complete();
                 
                 return stream.ToArray();
@@ -96,24 +97,9 @@ namespace Services
             worksheet.Cell(i + 2, 6).Value = order.Cost;
         }
 
-        private async Task<int> CreateReport(ReportDto report)
+        private async Task CreateReport(ReportDto report)
         {
-            var result = await _reportService.Create(report);
-            return result.Id;
-        }
-
-        private async Task CreateReportOrders(int reportId, IEnumerable<ExportActualOrdersViewModel> orders)
-        {
-            var reportOrder = new ReportOrderDto
-            {
-                ReportId = reportId
-            };
-            
-            foreach (var order in orders)
-            {
-                reportOrder.OrderId = order.Id;
-                await _reportOrderService.Create(reportOrder);
-            }
+            await _reportService.Create(report);
         }
     }
 }

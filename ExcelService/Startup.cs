@@ -31,10 +31,7 @@ namespace ExcelService
             
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IReportRepository, ReportRepository>();
-            
-            services.AddScoped<IReportOrderService, ReportOrderService>();
-            services.AddScoped<IReportOrderRepository, ReportOrderRepository>();
-            
+
             services.AddControllers();
             services.AddHttpClient();
             

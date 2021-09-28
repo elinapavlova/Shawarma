@@ -14,7 +14,6 @@ namespace Models
         public string User { get; set; }
         
         [NotMapped]
-        public List<OrderShawarmaViewModel> OrderShawarmas { get; set; } 
-        public List<ReportOrder> ReportOrders { get; set; } 
+        public List<OrderShawarmaViewModel> OrderShawarmas { get; set; }
     }
 }

@@ -31,7 +31,6 @@ namespace Infrastructure
         public async Task<Report> GetById(int id)
         {
             var report = await _context.Reports.FindAsync(id);
-            report.ReportOrders = await GetReportOrders(id);
             return report;
         }
         
@@ -40,8 +39,6 @@ namespace Infrastructure
             var report = await _context.Reports
                 .FirstOrDefaultAsync(r => date == r.WasCreated);
 
-            report.ReportOrders = await GetReportOrders(report.Id);
-            
             return report;
         }
         
@@ -51,12 +48,6 @@ namespace Infrastructure
                 .OrderBy(r => r.Id)
                 .ToListAsync();
 
-            if (reports.Count == 0)
-                return reports;
-
-            foreach (var report in reports)
-                report.ReportOrders = await GetReportOrders(report.Id);
-
             return reports;
         }
         
@@ -65,6 +56,8 @@ namespace Infrastructure
             var report = await _context.Reports.FindAsync(editedReport.Id);
             
             report.WasCreated = editedReport.WasCreated;
+            report.FileName = editedReport.FileName;
+            report.Document = report.Document;
 
             _context.Reports.Update(report);
             await _context.SaveChangesAsync();
@@ -78,17 +71,6 @@ namespace Infrastructure
             _context.Reports.Remove(report);
             await _context.SaveChangesAsync();
             return report;
-        }
-
-        private async Task<List<ReportOrder>> GetReportOrders(int id)
-        {
-            var reportOrders =  _context.ReportOrders
-                .Select(s => s)
-                .ToList()
-                .Where(r => r.ReportId == id)
-                .ToList();
-
-            return reportOrders;
         }
     }
 }

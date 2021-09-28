@@ -11,10 +11,7 @@ namespace Infrastructure.Profiles
         {
             CreateMap<ReportDto, Report>();
             CreateMap<Report, ReportDto>();
-            
-            CreateMap<ReportOrderDto, ReportOrder>();
-            CreateMap<ReportOrder, ReportOrderDto>();
-            
+
             CreateMap<ShawarmaImportViewModel, ShawarmaDto>();
         }
     }
