@@ -12,12 +12,12 @@ namespace API.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
-    public class ExportController : BaseController
+    public class ExcelController : BaseController
     {
         private readonly IExportActualOrdersToExcelService _exportService;
         private readonly IImportShawarmaFromExcelService _importService;
         private readonly Uri _baseAddress;
-        public ExportController
+        public ExcelController
         (
             IExportActualOrdersToExcelService exportService,
             IImportShawarmaFromExcelService importService,
