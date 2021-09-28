@@ -11,6 +11,7 @@ namespace Services.Contracts
         Task<ReportDto> GetById(int id);
         Task<ReportDto> GetByDate(DateTime date);
         Task<ICollection<ReportDto>> GetList();
+        Task<ICollection<ReportDto>> GetListByPage(int pageSize, int page = 1);
         Task<ReportDto> Edit(ReportDto editedReport);
         Task<ReportDto> Delete(int id);
     }

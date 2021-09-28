@@ -11,6 +11,7 @@ namespace Infrastructure.Contracts
         Task<Report> GetById(int id);
         Task<Report> GetByDate(DateTime date);
         Task<ICollection<Report>> GetList();
+        Task<ICollection<Report>> GetListByPage(int pageSize, int page = 1);
         Task<Report> Edit(Report editedReport);
         Task<Report> Delete(int id);
     }

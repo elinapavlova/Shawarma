@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
+using Microsoft.Extensions.Configuration;
 using Models;
 using Models.Dtos;
 using Services.Contracts;
@@ -13,15 +14,20 @@ namespace Services
     {
         private readonly IReportRepository _repository;
         private readonly IMapper _mapper;
+        private readonly int _pageSize;
+        private readonly int _page;
         
         public ReportService
         (
             IReportRepository repository,
-            IMapper mapper
+            IMapper mapper,
+            IConfiguration configuration
         )
         {
             _repository = repository;
             _mapper = mapper;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _page = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPage"]);
         }
 
         public async Task<ReportDto> Create(ReportDto reportDto)
@@ -46,6 +52,13 @@ namespace Services
         public async Task<ICollection<ReportDto>> GetList()
         {
             var reports = _mapper.Map<ICollection<ReportDto>>(await _repository.GetList());
+            return reports;
+        }
+
+        public async Task<ICollection<ReportDto>> GetListByPage(int pageSize, int page)
+        {
+            // Transfer default pageSize and page values from appsettings.json
+            var reports = _mapper.Map<ICollection<ReportDto>>(await _repository.GetListByPage(_pageSize, _page));
             return reports;
         }
 

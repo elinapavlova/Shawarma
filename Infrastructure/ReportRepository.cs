@@ -50,7 +50,13 @@ namespace Infrastructure
 
             return reports;
         }
-        
+
+        public async Task<ICollection<Report>> GetListByPage(int pageSize, int page = 1)
+        {
+            var result = await ApplyPaging(pageSize, page);
+            return result;
+        }
+
         public async Task<Report> Edit(Report editedReport)
         {
             var report = await _context.Reports.FindAsync(editedReport.Id);
@@ -71,6 +77,16 @@ namespace Infrastructure
             _context.Reports.Remove(report);
             await _context.SaveChangesAsync();
             return report;
+        }
+        
+        public async Task<ICollection<Report>> ApplyPaging(int pageSize, int page = 1)
+        {
+            var reports = _context.Reports
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            
+            return reports;
         }
     }
 }
