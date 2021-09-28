@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
 using Export.Services.Contracts;
-using Infrastructure.Result;
-using Models.Shawarma;
-using Models.Status;
-using Models.User;
+using Models.ViewModels;
 using Services.Contracts;
 
 namespace Export.Services
@@ -32,66 +32,64 @@ namespace Export.Services
             _shawarmaService = shawarmaService;
         }
         
-        public async Task<byte[]> ExportToExcel()
+        public async Task<ICollection<ExportActualOrdersViewModel>> PrepareOrderDataForExport()
         {
-            var shawarmas = await _orderService.GetActualList(DateTime.Now);
-            var i = 0; // счетчик строк
-            ResultContainer<StatusResponseDto> status;
-            ResultContainer<UserResponseDto> user;
-            ResultContainer<ShawarmaResponseDto> orderShawarma;
+            //var shawarmas = await _orderService.GetActualList(DateTime.Now);
+            var shawarmas = await _orderService.GetListByPage(3);
 
-            using var workbook = new XLWorkbook(XLEventTracking.Disabled);
-            
-            var worksheet = workbook.Worksheets.Add("Orders");
-
-            worksheet.Cell("A1").Value = "Id";
-            worksheet.Cell("B1").Value = "Дата";
-            worksheet.Cell("C1").Value = "Статус";
-            worksheet.Cell("D1").Value = "Клиент";
-            worksheet.Cell("E1").Value = "Шаурма";
-            worksheet.Cell("F1").Value = "Стоимость";
-                
-            worksheet.Row(1).Style.Font.Bold = true;
+            ICollection<ExportActualOrdersViewModel> orders = new List<ExportActualOrdersViewModel>();
 
             try
             {
                 foreach (var shawarma in shawarmas.Data)
                 {
-                    if (shawarma.Cost < 0)
-                        throw new Exception
-                            ($"Ошибка в заказе {shawarma.Id}. Стоимость заказа не может быть меньше 0!");
-                    
-                    status = await _statusService.GetById(shawarma.IdStatus);
-                    user = await _userService.GetById(shawarma.IdUser);
-                    var shawarmasInOrder = "";
+                    var orderShawa = new List<OrderShawarmaViewModel>();
+                    var status = await _statusService.GetById(shawarma.IdStatus);
+                    var user = await _userService.GetById(shawarma.IdUser);
 
                     foreach (var shawa in shawarma.OrderShawarmas)
                     {
-                        orderShawarma = await _shawarmaService.GetById(shawa.ShawarmaId);
-                        shawarmasInOrder += "шаурма " + orderShawarma.Data.Name + " " + shawa.Number + " шт.; ";
+                        var orderShawarma = await _shawarmaService.GetById(shawa.ShawarmaId);
+                        orderShawa.Add(new OrderShawarmaViewModel
+                        {
+                            Shawarma = orderShawarma.Data.Name,
+                            Number = shawa.Number
+                        });
                     }
 
-                    worksheet.Cell(i + 2, 1).Value = shawarma.Id;
-                    worksheet.Cell(i + 2, 2).Value = shawarma.Date;
-                    worksheet.Cell(i + 2, 3).Value = status.Data.Name;
-                    worksheet.Cell(i + 2, 4).Value = user.Data.Email;
-                    worksheet.Cell(i + 2, 5).Value = shawarmasInOrder;
-                    worksheet.Cell(i + 2, 6).Value = shawarma.Cost;
-
-                    i++;
+                    orders.Add(new ExportActualOrdersViewModel
+                    {
+                        Id = shawarma.Id,
+                        Date = shawarma.Date,
+                        User = user.Data.UserName,
+                        Status = status.Data.Name,
+                        Comment = shawarma.Comment,
+                        Cost = shawarma.Cost,
+                        OrderShawarmas = orderShawa
+                    });
                 }
 
                 await using var stream = new MemoryStream();
-                
-                workbook.SaveAs(stream);
-                stream.Flush();
-                return stream.ToArray();
+                return orders;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        public async Task<StringContent> CreateStringContentForExportOrders()
+        {
+            var orders = await PrepareOrderDataForExport();
+            var content = new StringContent
+            (
+                JsonSerializer.Serialize(orders),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            return content;
         }
     }
 }

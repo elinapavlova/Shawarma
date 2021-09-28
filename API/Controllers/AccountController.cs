@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Export.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
 using Infrastructure.Result;
@@ -15,7 +17,8 @@ namespace API.Controllers
         private readonly IJwtService _jwtService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IStatusService _statusService;
-        private readonly IUserService _userService;
+        private readonly IExportActualOrdersToExcelService _exportService;
+        
         public AccountController
         (
             IRoleService roleService,
@@ -24,7 +27,7 @@ namespace API.Controllers
             IJwtService jwtService,
             IShawarmaService shawarmaService,
             IStatusService statusService,
-            IUserService userService 
+            IExportActualOrdersToExcelService exportService
         )
         {
             _roleService = roleService;
@@ -33,43 +36,46 @@ namespace API.Controllers
             _accountService = accountService;
             _shawarmaService = shawarmaService;
             _statusService = statusService;
-            _userService = userService;
+            _exportService = exportService;
         }
         
         public async Task<ActionResult> IndexAdmin()
         {
             var user = await VerifyJwt();
+            ViewBag.Id = user.Data.Id;
             
             if (user.ErrorType.HasValue)
                 return Unauthorized();
             
-            ViewBag.Id = user.Data.Id;
             return View();
         }
 
         public async Task<ActionResult> IndexClient()
         {
             var user = await VerifyJwt();
+            ViewBag.Id = user.Data.Id;
 
             if (user.ErrorType.HasValue)
                 return Unauthorized();
             
-            ViewBag.Id = user.Data.Id;
             return View();
         }
 
         public async Task<ActionResult<ResultContainer<UserResponseDto>>> Index(UserLoginDto dto)
         {
             var user = await _authService.VerifyUser(dto.Email, dto.Password);
+            
             if (user.ErrorType.HasValue)
                 return user;
             
             await CreateAndSaveJwt(dto);
-
+            ViewBag.Id = user.Data.Id;
+            
             return user.Data.IdRole switch
             {
                 1 => RedirectToAction("IndexAdmin", "Account"),
-                2 => RedirectToAction("IndexClient", "Account")
+                2 => RedirectToAction("IndexClient", "Account"),
+                _ => throw new ArgumentOutOfRangeException()
             };
         }
         
@@ -157,17 +163,28 @@ namespace API.Controllers
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
         }
         
-        public async Task<IActionResult> GetClientOrders(int id)
+        /// <summary>
+        /// Список заказов клиента
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> GetOrdersOfClient(int id, int page = 1)
         {
             var user = await VerifyJwt();
-            var viewModel = await _userService.GetById(id);
+            var isAuthorize = await IsEqualIdAndJwtId(id);
+
+            if (!isAuthorize) 
+                return Unauthorized();
+            
+            var viewModel = await _accountService.GetOrdersByUserPage(id, page);
             var shawarmas = await _shawarmaService.GetList();
             var statuses = await _statusService.GetList();
-
             ViewBag.Shawarmas = shawarmas.Data;
             ViewBag.Statuses = statuses.Data;
-            
+
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
+
         }
         
         /// <summary>
@@ -207,18 +224,34 @@ namespace API.Controllers
         {
             return View();
         }
-        
+
         /// <summary>
-        /// Verification of user by token
+        /// Верификация Jwt-токена
         /// </summary>
         /// <returns></returns>
         private async Task<ResultContainer<UserResponseDto>> VerifyJwt()
         {
             var jwt = Request.Cookies["jwt"];
             var user = await _authService.VerifyJwt(jwt);
+
             return user;
         }
+
+        /// <summary>
+        /// Проверка Id пользователя и Id пользователя из Jwt-токена
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private async Task<bool> IsEqualIdAndJwtId(int id)
+        {
+            var idFromJwt = await VerifyJwt();
+            return id == idFromJwt.Data.Id;
+        }
         
+        /// <summary>
+        /// Создание и сохранение Jwt-токена в куки
+        /// </summary>
+        /// <param name="dto"></param>
         private async Task CreateAndSaveJwt(UserLoginDto dto)
         {
             var user = await _authService.VerifyUser(dto.Email, dto.Password);
@@ -226,7 +259,6 @@ namespace API.Controllers
             if (!user.ErrorType.HasValue)
             {
                 var jwt = _jwtService.Generate(user.Data.Id, user.Data.IdRole);
-                
                 Response.Cookies.Append("jwt", jwt, new CookieOptions
                 {
                     HttpOnly = true

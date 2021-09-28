@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Export.Services.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace API.Controllers
 {
@@ -12,28 +16,48 @@ namespace API.Controllers
     {
         private readonly IExportActualOrdersToExcelService _exportService;
         private readonly IImportShawarmaFromExcelService _importService;
-        
+        private readonly Uri _baseAddress;
         public ExportController
         (
             IExportActualOrdersToExcelService exportService,
-            IImportShawarmaFromExcelService importService
+            IImportShawarmaFromExcelService importService,
+            IConfiguration configuration
         )
         {
             _exportService = exportService;
             _importService = importService;
+            _baseAddress = new Uri(configuration["BaseAddress:ExcelUri"]);
         }
         
-        [HttpGet]
-        public async Task<byte[]> ExportToExcel()
+        [HttpPost("Export")]
+        public async Task<FileContentResult> ExportToExcel()
         {
-            var result = await _exportService.ExportToExcel();
+            using var client = new HttpClient();
+            client.BaseAddress = _baseAddress;
+
+            var response = await client.PostAsync("Excel/Export", 
+                await _exportService.CreateStringContentForExportOrders());
+
+            var result = await response.Content.ReadAsByteArrayAsync();
+
+            return new FileContentResult(result, 
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            {
+                FileDownloadName = $"orders_{DateTime.Now}.xlsx"
+            };
+        }
+        
+        [HttpPost("Import")]
+        public async Task<string> ImportFromExcel([FromForm]ICollection<IFormFile> files)
+        {
+            using var client = new HttpClient();
+            client.BaseAddress = _baseAddress;
+            
+            var response = await client.PostAsync("Excel/Import", 
+                await _importService.CreateMultipartContentForImportShawarma(files));
+
+            var result = await response.Content.ReadAsStringAsync();
             return result;
-        }
-        
-        [HttpPost]
-        public async Task ImportFromExcel(IFormFile file)
-        {
-            await _importService.ImportFromExcel(file);
         }
     }
 }

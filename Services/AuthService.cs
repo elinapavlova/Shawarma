@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Infrastructure.Validate;
@@ -13,8 +15,7 @@ namespace Services
     {
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        private readonly Validator _validator;
-        private readonly IConfiguration _configuration;
+        private readonly Uri _baseAddress;
         public AuthService
         (
             IUserService userService,
@@ -24,8 +25,7 @@ namespace Services
         {
             _userService = userService;
             _jwtService = jwtService;
-            _configuration = configuration;
-            _validator = new Validator(_configuration);
+            _baseAddress = new Uri(configuration["BaseAddress:DadataUri"]);
         }
         
         public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
@@ -80,10 +80,10 @@ namespace Services
         public async Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto)
         {
             var user = await _userService.GetByEmail(dto.Email);
-            var address = await _validator.ValidateAddress(dto.Address);
+            var res = await ValidateAddress(dto.Address);
             var isValidEmail = Validator.EmailIsValid(dto.Email);
             
-            if (user.Data != null || address != "0" || !isValidEmail)
+            if (user.Data != null || res == "" || !isValidEmail)
             {
                 user.ErrorType = ErrorType.BadRequest;
                 return user;
@@ -91,6 +91,22 @@ namespace Services
 
             var result = await _userService.Create(dto);
             return result;
+        }
+
+        private async Task<string> ValidateAddress(string address)
+        {
+            using var client = new HttpClient();
+            client.BaseAddress = _baseAddress;
+
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("Name", address),
+            });
+            
+            var response = await client.PostAsync("Validate", content);
+
+            var res = await response.Content.ReadAsStringAsync();
+            return res;
         }
     }
 }

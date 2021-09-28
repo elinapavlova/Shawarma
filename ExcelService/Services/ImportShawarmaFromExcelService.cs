@@ -1,95 +1,31 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
-using System.Transactions;
-using AutoMapper;
 using Export.Services.Contracts;
 using Microsoft.AspNetCore.Http;
-using Models.Shawarma;
-using Models.ViewModels;
-using OfficeOpenXml;
-using OfficeOpenXml.Packaging.Ionic.Zip;
-using Services.Contracts;
 
 namespace Export.Services
 {
     public class ImportShawarmaFromExcelService : IImportShawarmaFromExcelService
     {
-        private readonly IMapper _mapper;
-        private readonly IShawarmaService _shawarmaService;
-        
-        public ImportShawarmaFromExcelService
-        (
-            IMapper mapper,
-            IShawarmaService shawarmaService
-        )
+
+        public async Task<MultipartFormDataContent> CreateMultipartContentForImportShawarma(IEnumerable<IFormFile> files)
         {
-            _mapper = mapper;
-            _shawarmaService = shawarmaService;
-        }
-        
-        public async Task ImportFromExcel(IFormFile file)
-        {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            try
-            {
-                // Если файл пустой
-                if (file?.Length <= 0 || file == null)
-                    throw new BadReadException("Пустой файл!");
+            var file = files.FirstOrDefault();
 
-                var extension = Path.GetExtension(file.FileName);
-
-                // Если не excel-страница
-                if (!extension.ToLower().Equals(".xlsx"))
-                {
-                    throw new BadReadException("Недопустимое расширение файла!");
-                }
-                
-                var stream = file.OpenReadStream();
-
-                using var package = new ExcelPackage(stream);
-                var workSheet = package.Workbook.Worksheets.First();
-                var totalRows = workSheet.Dimension.Rows;
-
-                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-                for (var i = 2; i <= totalRows; i++)
-                {
-                    var name = workSheet.Cells[i, 1].Value.ToString();
-                    var cost = workSheet.Cells[i, 2].Value.ToString();
-                    var shawarma = ValidateExcel(name, cost);
-
-                    if (shawarma == null)
-                        throw new Exception($"Ошибка на строке {i}.");
-                    
-                    var newShawarma = _mapper.Map <ShawarmaRequestDto>(shawarma);
-                    await _shawarmaService.Create(newShawarma);
-                }
-                scope.Complete();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-
-        private static ShawarmaImportViewModel ValidateExcel(string _name, string _cost)
-        {
-            int outCost;
-            
-            var name = string.IsNullOrEmpty(_name);
-            var cost = int.TryParse(_cost, out outCost);
-
-            if (name || !cost)
+            if (file == null) 
                 return null;
             
-            var result = new ShawarmaImportViewModel
-            {
-                Name = _name,
-                Cost = outCost
-            };
-            return result;
+            var stream = new MemoryStream((int) file.Length);
+            await file.CopyToAsync(stream);
+
+            var byteArrayContent = new ByteArrayContent(stream.ToArray());
+            var multipartContent = new MultipartFormDataContent();
+            multipartContent.Add(byteArrayContent, "file", file.FileName);
+
+            return multipartContent;
         }
     }
 }

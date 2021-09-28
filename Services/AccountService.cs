@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Transactions;
 using Infrastructure.Result;
 using Microsoft.Extensions.Configuration;
 using Models.Account;
@@ -19,6 +20,7 @@ namespace Services
         private readonly IOrderService _orderService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IOrderShawarmaService _orderShawarmaService;
+        private readonly IUserService _userService;
         private readonly int _pageSize;
 
         public AccountService
@@ -26,23 +28,28 @@ namespace Services
             IOrderService orderService,
             IShawarmaService shawarmaService,
             IOrderShawarmaService orderShawarmaService,
+            IUserService userService,
             IConfiguration configuration
         )
         {
             _orderService = orderService;
             _shawarmaService = shawarmaService;
             _orderShawarmaService = orderShawarmaService;
+            _userService = userService;
             _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         public async void CreateOrder(ResultContainer<UserResponseDto> user, string rows)
         {
             var orderFromJson = JsonSerializer.Deserialize<CreateOrderViewModel[]>(rows);
-            var newOrder = new OrderRequestDto()
+            var newOrder = new OrderRequestDto
             {
                 IdStatus = 1,
                 IdUser = user.Data.Id
             };
+            
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            
             var createdOrder = await _orderService.Create(newOrder);
             var i = 0;
             
@@ -60,6 +67,7 @@ namespace Services
                 await _orderShawarmaService.Create(orderShawa);
                 i++;
             }
+            scope.Complete();
         }
 
         public async Task<IndexViewModel<ShawarmaResponseDto>> GetShawarmaPage(bool needOnlyActual, int page = 1)
@@ -93,6 +101,21 @@ namespace Services
                 PageViewModel = pageViewModel,
                 Things = viewPage.Data
             };
+            return viewModel;
+        }
+        
+        public async Task<IndexViewModel<OrderResponseDto>> GetOrdersByUserPage(int id, int page = 1)
+        {
+            var count = await _orderService.Count();
+            var user = await _userService.GetById(id);
+            var pageViewModel = new PageViewModel(count, page, _pageSize);
+            
+            var viewModel = new IndexViewModel<OrderResponseDto>
+            {
+                PageViewModel = pageViewModel,
+                Things = user.Data.Orders
+            };
+            
             return viewModel;
         }
     }
