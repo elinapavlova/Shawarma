@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Models.Role;
+﻿using Models.Role;
 
 namespace Infrastructure.Contracts
 {

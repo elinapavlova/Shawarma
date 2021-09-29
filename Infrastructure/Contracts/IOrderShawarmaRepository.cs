@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Models.OrderShawarma;
+﻿using Models.OrderShawarma;
 
 namespace Infrastructure.Contracts
 {

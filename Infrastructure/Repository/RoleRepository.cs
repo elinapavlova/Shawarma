@@ -8,13 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Models.Role;
 
-
 namespace Infrastructure.Repository
 {
     public class RoleRepository : IRoleRepository
     {
         private readonly ApiContext _db;
-        private readonly int _appSettingsConfiguration;
+        private readonly int _pageSize;
         
         public RoleRepository
         (
@@ -23,21 +22,14 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
-        }
-
-        public async Task<ICollection<Role>> ApplyPaging(ICollection<Role> source, int pageSize, int page = 1)
-        {
-            var roles = source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-            return roles;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         public async Task<ICollection<Role>> GetList()
         {
-            var roles = await _db.Roles.OrderBy(r => r.Id).ToListAsync();
+            var roles = await _db.Roles
+                .OrderBy(r => r.Id)
+                .ToListAsync();
             return roles; 
         }
 
@@ -49,9 +41,12 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<Role>> GetPage(int pageSize, int page = 1)
         {
-            var source = await GetList();
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
-            return result;
+            var roles = await _db.Roles
+                .OrderBy(r => r.Id)
+                .Skip((page - 1) * _pageSize)
+                .Take(_pageSize)
+                .ToListAsync();
+            return roles;
         }
 
         public async Task<Role> Create(Role role)

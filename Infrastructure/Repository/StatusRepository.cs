@@ -13,7 +13,7 @@ namespace Infrastructure.Repository
     public class StatusRepository : IStatusRepository
     {
         private readonly ApiContext _db;
-        private readonly int _appSettingsConfiguration;
+        private readonly int _pageSize;
         
         public StatusRepository
         (
@@ -22,22 +22,13 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
-        }
-
-        public async Task<ICollection<Status>> ApplyPaging(ICollection<Status> source, int pageSize, int page = 1)
-        {
-            var statuses = source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-            return statuses;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         public async Task<ICollection<Status>> GetList()
         {
             var statuses = await _db.Statuses
-                .OrderBy(o => o.Id)
+                .OrderBy(s => s.Id)
                 .ToListAsync();
             return statuses;
         }
@@ -50,9 +41,12 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<Status>> GetPage(int pageSize, int page = 1)
         {
-            var source = await GetList();
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
-            return result;
+            var statuses = await _db.Statuses
+                .OrderBy(s => s.Id)
+                .Skip((page - 1) * _pageSize)
+                .Take(_pageSize)
+                .ToListAsync();
+            return statuses;
         }
 
         public async Task<Status> Create(Status status)

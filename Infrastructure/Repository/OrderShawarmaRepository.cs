@@ -13,7 +13,7 @@ namespace Infrastructure.Repository
     public class OrderShawarmaRepository : IOrderShawarmaRepository
     {
         private readonly ApiContext _db;
-        private readonly int _appSettingsConfiguration;
+        private readonly int _pageSize;
         public OrderShawarmaRepository
         (
             ApiContext context,
@@ -21,24 +21,15 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
-        }
-
-        public async Task<ICollection<OrderShawarma>> ApplyPaging(ICollection<OrderShawarma> source, int pageSize, int page = 1)
-        {
-            var shawarmas = source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-            return shawarmas;
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
 
         public async Task<ICollection<OrderShawarma>> GetList()
         {
-            var ordershawas = await _db.OrderShawarmas
+            var orderShawarmas = await _db.OrderShawarmas
                 .OrderBy(o => o.Id)
                 .ToListAsync();
-            return ordershawas;
+            return orderShawarmas;
         }
 
         public async Task<int> Count()
@@ -49,9 +40,12 @@ namespace Infrastructure.Repository
 
         public async Task<ICollection<OrderShawarma>> GetPage(int pageSize, int page = 1)
         {
-            var source = await GetList();
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
-            return result;
+            var orderShawarmas = await _db.OrderShawarmas
+                .OrderBy(o => o.Id)
+                .Skip((page - 1) * _pageSize)
+                .Take(_pageSize)
+                .ToListAsync();
+            return orderShawarmas;
         }
 
         public async Task<OrderShawarma> Create(OrderShawarma orderShawarma)
@@ -62,31 +56,30 @@ namespace Infrastructure.Repository
             return orderShawarma;
         }
 
-        public async Task<OrderShawarma> Edit(OrderShawarma newOrderShawa)
+        public async Task<OrderShawarma> Edit(OrderShawarma newOrderShawarma)
         {
-            var orderShawa = await _db.OrderShawarmas.FindAsync(newOrderShawa.Id);
-            
-            orderShawa.Number = newOrderShawa.Number;
+            var orderShawarma = await _db.OrderShawarmas.FindAsync(newOrderShawarma.Id);
+            orderShawarma.Number = newOrderShawarma.Number;
 
-            _db.OrderShawarmas.Update(orderShawa);
+            _db.OrderShawarmas.Update(orderShawarma);
             await _db.SaveChangesAsync();
 
-            return orderShawa;
+            return orderShawarma;
         }
 
         public async Task<OrderShawarma> Delete(int id)
         {
-            var orderShawa = await _db.OrderShawarmas.FindAsync(id);
-            _db.OrderShawarmas.Remove(orderShawa);
+            var orderShawarma = await _db.OrderShawarmas.FindAsync(id);
+            _db.OrderShawarmas.Remove(orderShawarma);
             await _db.SaveChangesAsync();
 
-            return orderShawa;
+            return orderShawarma;
         }
 
         public async Task<OrderShawarma> GetById(int id)
         {
-            var orderShawa = await _db.OrderShawarmas.FindAsync(id);
-            return orderShawa;
+            var orderShawarma = await _db.OrderShawarmas.FindAsync(id);
+            return orderShawarma;
         }
     }
 }

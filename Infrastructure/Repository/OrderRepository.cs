@@ -7,6 +7,7 @@ using Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Models.Order;
+using Models.OrderShawarma;
 
 namespace Infrastructure.Repository
 {
@@ -30,46 +31,43 @@ namespace Infrastructure.Repository
                 .Where(o => o.Date.Day == DateTime.Today.Day)
                 .OrderBy(o => o.Id)
                 .ToListAsync();
-            
-            var orderShawas = await _db.OrderShawarmas.ToListAsync();
-            
-            if (orderShawas.Count == 0 || orders.Count == 0)
-                return orders;
 
             foreach (var order in orders)
-            {
-                var orderShawasOfOrder = orderShawas
-                    .Where(o => o.OrderId == order.Id)
-                    .ToList();
-                
-                order.OrderShawarmas = orderShawasOfOrder;
-            }
+                order.OrderShawarmas = await GetOrderShawarmas(order.Id);
             
             return orders;
         }
 
         public async Task<ICollection<Order>> GetActualListByPage(DateTime date, int pageSize, int page = 1)
         {
-            var source = await GetActualList(date);
-            var result = await ApplyPaging(source, _pageSize, page);
-            return result;
+            var orders = await _db.Orders
+                .Where(o => o.Date.Day == DateTime.Today.Day)
+                .OrderBy(o => o.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            
+            return orders;
         }
 
         public async Task<ICollection<Order>> GetPage(int pageSize, int page = 1)
         {
-            var source = await GetList();
-            var result = await ApplyPaging(source, _pageSize, page);
+            var result = await ApplyPaging(_pageSize, page);
             return result;
         }
 
-        public async Task<ICollection<Order>> ApplyPaging(ICollection<Order> source, int pageSize, int page = 1)
+        private async Task<ICollection<Order>> ApplyPaging(int pageSize, int page = 1)
         {
-            var shawarmas = source
+            var orders = await _db.Orders
+                .OrderBy(o => o.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync();
+
+            foreach (var order in orders)
+                order.OrderShawarmas = await GetOrderShawarmas(order.Id);
             
-            return shawarmas;
+            return orders;
         }
 
         public async Task<ICollection<Order>> GetList()
@@ -77,21 +75,10 @@ namespace Infrastructure.Repository
             var orders = await _db.Orders
                 .OrderBy(o => o.Id)
                 .ToListAsync();
-            
-            var orderShawas = await _db.OrderShawarmas.ToListAsync();
-            
-            if (orderShawas.Count == 0)
-                return orders;
 
             foreach (var order in orders)
-            {
-                var orderShawasOfOrder = orderShawas
-                    .Where(o => o.OrderId == order.Id)
-                    .ToList();
-                
-                order.OrderShawarmas = orderShawasOfOrder;
-            }
-            
+                order.OrderShawarmas = await GetOrderShawarmas(order.Id);
+
             return orders;
         }
 
@@ -127,7 +114,7 @@ namespace Infrastructure.Repository
         public async Task<Order> Delete(int id)
         {
             var order = await _db.Orders.FindAsync(id);
-            _db.Remove(order);
+            _db.Orders.Remove(order);
             await _db.SaveChangesAsync();
 
             return order;
@@ -140,19 +127,19 @@ namespace Infrastructure.Repository
             if (order == null) 
                 return null;
 
-            var orderShawas = await _db.OrderShawarmas.ToListAsync();
-            
-            if (orderShawas.Count == 0)
-                return order;
-            
-            var orderShawasOfOrder = orderShawas.Where(o => o.OrderId == order.Id).ToList();
-            
-            if (orderShawasOfOrder.Count == 0)
-                return order;
-
-            order.OrderShawarmas = orderShawasOfOrder;
+            order.OrderShawarmas = await GetOrderShawarmas(order.Id);
             
             return order;
+        }
+
+        private async Task<List<OrderShawarma>> GetOrderShawarmas(int idOrder)
+        {
+            var orderShawasOfOrder = _db.OrderShawarmas
+                .Where(o => o.OrderId == idOrder)
+                .OrderBy(o => o.Id)
+                .ToList();
+
+            return orderShawasOfOrder;
         }
     }
 }

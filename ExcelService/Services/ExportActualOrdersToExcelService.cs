@@ -34,9 +34,7 @@ namespace Export.Services
         
         public async Task<ICollection<ExportActualOrdersViewModel>> PrepareOrderDataForExport()
         {
-            //var shawarmas = await _orderService.GetActualList(DateTime.Now);
-            var shawarmas = await _orderService.GetListByPage(3);
-
+            var shawarmas = await _orderService.GetActualList(DateTime.Now);
             ICollection<ExportActualOrdersViewModel> orders = new List<ExportActualOrdersViewModel>();
 
             try

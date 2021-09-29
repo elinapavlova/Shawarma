@@ -14,7 +14,7 @@ namespace Infrastructure.Repository
         where TModel : BaseModel
     {
         private readonly ApiContext _context;
-        private readonly int _appSettingsConfiguration;
+        private readonly int _pageSize;
         protected BaseRepository
         (
             ApiContext context,
@@ -22,7 +22,7 @@ namespace Infrastructure.Repository
         )
         {
             _context = context;
-            _appSettingsConfiguration = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
         }
         
         protected virtual IQueryable<TModel> GetDataSet()
@@ -55,16 +55,6 @@ namespace Infrastructure.Repository
             await _context.SaveChangesAsync();
             return data;
         }
-        
-
-        public async Task<ICollection<TModel>> ApplyPaging(ICollection<TModel> source, int pageSize, int page = 1)
-        {
-            var data = source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-            return data;
-        }
 
         public async Task<ICollection<TModel>> GetList()
         {
@@ -75,14 +65,16 @@ namespace Infrastructure.Repository
         public async Task<int> Count()
         {
             var count = await GetList();
-            return count.Count();
+            return count.Count;
         }
 
         public async Task<ICollection<TModel>> GetPage(int pageSize, int page = 1)
         {
-            var source = await GetList();
-            var result = await ApplyPaging(source, _appSettingsConfiguration, page);
-            return result;
+            var data = await _context.Set<TModel>()
+                .Skip((page - 1) * _pageSize)
+                .Take(_pageSize)
+                .ToListAsync();
+            return data;
         }
     }
 }
