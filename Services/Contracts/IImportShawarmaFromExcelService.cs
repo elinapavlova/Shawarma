@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Export.Services.Contracts
+namespace Services.Contracts
 {
     public interface IImportShawarmaFromExcelService
     {
-        Task<MultipartFormDataContent> CreateMultipartContentForImportShawarma(IEnumerable<IFormFile> files);
+        Task<string> ImportShawarmas(IEnumerable<IFormFile> files);
     }
 }

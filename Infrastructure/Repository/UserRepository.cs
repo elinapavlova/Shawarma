@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Database;
 using Infrastructure.Contracts;
+using Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
 using Models.Order;
 using Models.User;
@@ -23,7 +24,7 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
         }
 
         public async Task<User> GetUserByEmail(string email)

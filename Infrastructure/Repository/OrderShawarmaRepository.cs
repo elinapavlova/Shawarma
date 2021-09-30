@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
+using Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Models.OrderShawarma;
@@ -21,7 +22,7 @@ namespace Infrastructure.Repository
         )
         {
             _db = context;
-            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
         }
 
         public async Task<ICollection<OrderShawarma>> GetList()

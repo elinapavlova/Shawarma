@@ -1,7 +1,6 @@
+using System;
 using AutoMapper;
 using Database;
-using Export.Services;
-using Export.Services.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +32,16 @@ namespace API
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpClient();
+            services.AddHttpClient<IExportActualOrdersToExcelService, ExportActualOrdersToExcelService>("Excel", 
+                client =>
+            {
+                client.BaseAddress = new Uri(Configuration["BaseAddress:ExcelUri"]);
+            });
+            services.AddHttpClient<IExportActualOrdersToExcelService, ExportActualOrdersToExcelService>("Dadata", 
+                client =>
+            {
+                client.BaseAddress = new Uri(Configuration["BaseAddress:DadataUri"]);
+            });
             
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();

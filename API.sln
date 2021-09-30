@@ -12,8 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Databa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shawarma", "Shawarma\Shawarma.csproj", "{8BD63893-7AC0-436F-9560-24F5540018A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelService", "ExcelService\ExcelService.csproj", "{8D6D9E37-0E16-4CF9-B797-B83B8A7031EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,9 +42,5 @@ Global
 		{8BD63893-7AC0-436F-9560-24F5540018A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BD63893-7AC0-436F-9560-24F5540018A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BD63893-7AC0-436F-9560-24F5540018A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D6D9E37-0E16-4CF9-B797-B83B8A7031EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D6D9E37-0E16-4CF9-B797-B83B8A7031EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D6D9E37-0E16-4CF9-B797-B83B8A7031EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D6D9E37-0E16-4CF9-B797-B83B8A7031EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -5,11 +5,11 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Export.Services.Contracts;
+using AutoMapper.Configuration;
 using Models.ViewModels;
 using Services.Contracts;
 
-namespace Export.Services
+namespace Services
 {
     public class ExportActualOrdersToExcelService : IExportActualOrdersToExcelService
     {
@@ -17,19 +17,22 @@ namespace Export.Services
         private readonly IStatusService _statusService;
         private readonly IUserService _userService;
         private readonly IShawarmaService _shawarmaService;
+        private readonly IHttpClientFactory _clientFactory;
 
         public ExportActualOrdersToExcelService
         (
             IOrderService orderService,
             IStatusService statusService,
             IUserService userService,
-            IShawarmaService shawarmaService
+            IShawarmaService shawarmaService,
+            IHttpClientFactory clientFactory 
         )
         {
             _orderService = orderService;
             _statusService = statusService;
             _userService = userService;
             _shawarmaService = shawarmaService;
+            _clientFactory = clientFactory;
         }
         
         public async Task<ICollection<ExportActualOrdersViewModel>> PrepareOrderDataForExport()
@@ -77,7 +80,7 @@ namespace Export.Services
             }
         }
 
-        public async Task<StringContent> CreateStringContentForExportOrders()
+        public async Task<byte[]> PostOrders()
         {
             var orders = await PrepareOrderDataForExport();
             var content = new StringContent
@@ -87,7 +90,12 @@ namespace Export.Services
                 "application/json"
             );
 
-            return content;
+            using var client = _clientFactory.CreateClient("Excel");
+
+            var response = await client.PostAsync("Export", content);
+            var result = await response.Content.ReadAsByteArrayAsync();
+
+            return result;
         }
     }
 }

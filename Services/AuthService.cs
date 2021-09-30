@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Infrastructure.Validate;
-using Microsoft.Extensions.Configuration;
 using Models.Error;
 using Models.User;
 using Services.Contracts;
@@ -15,17 +13,18 @@ namespace Services
     {
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        private readonly Uri _baseAddress;
+        private readonly IHttpClientFactory _clientFactory;
+        
         public AuthService
         (
             IUserService userService,
             IJwtService jwtService,
-            IConfiguration configuration
+            IHttpClientFactory clientFactory 
         )
         {
             _userService = userService;
             _jwtService = jwtService;
-            _baseAddress = new Uri(configuration["BaseAddress:DadataUri"]);
+            _clientFactory = clientFactory;
         }
         
         public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
@@ -74,6 +73,7 @@ namespace Services
         public async Task<ResultContainer<UserResponseDto>> Login(UserLoginDto dto)
         {
             var user = await VerifyUser(dto.Email, dto.Password);
+            _jwtService.Generate(user.Data.Id, user.Data.IdRole);
             return user;
         }
         
@@ -95,8 +95,7 @@ namespace Services
 
         private async Task<string> ValidateAddress(string address)
         {
-            using var client = new HttpClient();
-            client.BaseAddress = _baseAddress;
+            using var client = _clientFactory.CreateClient("Dadata");
 
             var content = new FormUrlEncodedContent(new[]
             {

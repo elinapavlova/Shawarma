@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Infrastructure.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services.Contracts;
@@ -15,7 +16,7 @@ namespace Services
 
         public JwtService(IConfiguration configuration)
         {
-            _secretKey = configuration["AppSettings:Secret"];
+            _secretKey = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().Secret;
         }
         
         public string Generate(int id, int idRole)
@@ -24,12 +25,15 @@ namespace Services
             {
                 new ("idRole", idRole.ToString())
             };
-
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            
             var credentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+            
             var header = new JwtHeader(credentials);
+            
             var payload = new JwtPayload
                 (id.ToString(), null, claims,null, DateTime.Today.AddDays(1)); // 1 day
+            
             var securityToken = new JwtSecurityToken(header, payload);
 
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
@@ -38,7 +42,9 @@ namespace Services
         public JwtSecurityToken Verify(string jwt)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            
             var key = Encoding.ASCII.GetBytes(_secretKey);
+            
             tokenHandler.ValidateToken(jwt, new TokenValidationParameters
             {
                 IssuerSigningKey = new SymmetricSecurityKey(key),
