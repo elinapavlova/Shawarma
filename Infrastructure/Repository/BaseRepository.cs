@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Infrastructure.Contracts;
+using Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Models;
 
 namespace Infrastructure.Repository
@@ -18,11 +17,11 @@ namespace Infrastructure.Repository
         protected BaseRepository
         (
             ApiContext context,
-            IConfiguration configuration
+            AppSettingsOptions appSettings
         )
         {
             _context = context;
-            _pageSize = Convert.ToInt32(configuration["AppSettingsConfiguration:DefaultPageSize"]);
+            _pageSize = appSettings.DefaultPageSize;
         }
         
         protected virtual IQueryable<TModel> GetDataSet()

@@ -4,7 +4,6 @@ using Infrastructure.Options;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Models.User;
 using Services.Contracts;
 
@@ -21,11 +20,11 @@ namespace API.Controllers
         public UserController
         (
             IUserService service,
-            IConfiguration configuration
+            AppSettingsOptions appSettings
         )
         {
             _userService = service;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSettings.DefaultPageSize;
         }
        
         /// <summary>

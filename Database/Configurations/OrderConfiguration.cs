@@ -10,7 +10,6 @@ namespace Database.Configurations
         {
             builder.ToTable("Orders").Property(p => p.Id).IsRequired();
             builder.ToTable("Orders").Property(p => p.Date).IsRequired();
-            builder.ToTable("Orders").Property(p => p.Comment).HasMaxLength(300);
             builder.ToTable("Orders").Property(p => p.Cost);
 
             builder.ToTable("Orders")

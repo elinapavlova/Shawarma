@@ -31,7 +31,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Database\Database.csproj" />
-      <ProjectReference Include="..\ExcelService\ExcelService.csproj" />
       <ProjectReference Include="..\Models\Models.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
     </ItemGroup>

@@ -26,6 +26,7 @@ namespace Infrastructure.Profiles
             
             CreateMap<OrderRequestDto, Order>();
             CreateMap<Order, OrderResponseDto>();
+            CreateMap<Order, OrderDto>();
             CreateMap<OrderResponseDto, OrderRequestDto>().ForMember("Date", 
                 opt => opt.MapFrom(o => o.Date));
             CreateMap<OrderRequestDto, OrderResponseDto>();
@@ -33,7 +34,10 @@ namespace Infrastructure.Profiles
                 => opt.MapFrom(o => o));
             CreateMap<ICollection<Order>, ResultContainer<ICollection<OrderResponseDto>>>().ForMember("Data", 
                 opt 
-                    => opt.MapFrom(o => o));            
+                    => opt.MapFrom(o => o));
+            CreateMap<ICollection<Order>, ResultContainer<ICollection<OrderDto>>>().ForMember("Data",
+                opt
+                    => opt.MapFrom(o => o));
             
             
             CreateMap<ShawarmaRequestDto, Shawarma>();

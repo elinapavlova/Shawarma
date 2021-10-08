@@ -45,30 +45,30 @@ namespace Services
         public async Task<ResultContainer<UserResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<UserResponseDto>();
-            var getUser = await _repository.GetById(id);
+            var user = await _repository.GetById(id);
             
-            if (getUser == null)
+            if (user == null)
             {
                 result.ErrorType = ErrorType.NotFound;
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(user);
             return result;
         }
         
         public async Task<ResultContainer<UserResponseDto>> GetByEmail(string email)
         {
             var result = new ResultContainer<UserResponseDto>();
-            var getUser = await _repository.GetUserByEmail(email);
+            var user = await _repository.GetUserByEmail(email);
             
-            if (getUser == null)
+            if (user == null)
             {
                 result.ErrorType = ErrorType.NotFound;
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<UserResponseDto>>(getUser);
+            result = _mapper.Map<ResultContainer<UserResponseDto>>(user);
             return result;
         }
 

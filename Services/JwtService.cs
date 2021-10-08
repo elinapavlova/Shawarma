@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Infrastructure.Options;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services.Contracts;
 
@@ -14,9 +13,9 @@ namespace Services
     {
         private readonly string _secretKey;
 
-        public JwtService(IConfiguration configuration)
+        public JwtService(AppSettingsOptions appSettings)
         {
-            _secretKey = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().Secret;
+            _secretKey = appSettings.Secret;
         }
         
         public string Generate(int id, int idRole)

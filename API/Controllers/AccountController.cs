@@ -16,8 +16,7 @@ namespace API.Controllers
         private readonly IJwtService _jwtService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IStatusService _statusService;
-        private readonly IExportActualOrdersToExcelService _exportService;
-        
+
         public AccountController
         (
             IRoleService roleService,
@@ -25,8 +24,7 @@ namespace API.Controllers
             IAccountService accountService,
             IJwtService jwtService,
             IShawarmaService shawarmaService,
-            IStatusService statusService,
-            IExportActualOrdersToExcelService exportService
+            IStatusService statusService
         )
         {
             _roleService = roleService;
@@ -35,7 +33,6 @@ namespace API.Controllers
             _accountService = accountService;
             _shawarmaService = shawarmaService;
             _statusService = statusService;
-            _exportService = exportService;
         }
         
         public async Task<ActionResult> IndexAdmin()

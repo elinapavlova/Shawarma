@@ -42,15 +42,15 @@ namespace Services
         public async Task<ResultContainer<RoleResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<RoleResponseDto>();
-            var getRole = await _repository.GetById(id);
+            var role = await _repository.GetById(id);
             
-            if (getRole == null)
+            if (role == null)
             {
                 result.ErrorType = ErrorType.NotFound;
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<RoleResponseDto>>(await _repository.GetById(id));
+            result = _mapper.Map<ResultContainer<RoleResponseDto>>(role);
 
             return result;
         }

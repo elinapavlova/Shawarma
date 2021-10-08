@@ -43,15 +43,15 @@ namespace Services
         public async Task<ResultContainer<StatusResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<StatusResponseDto>();
-            var getStatus = await _repository.GetById(id);
+            var status = await _repository.GetById(id);
             
-            if (getStatus == null)
+            if (status == null)
             {
                 result.ErrorType = ErrorType.NotFound;
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<StatusResponseDto>>(await _repository.GetById(id));
+            result = _mapper.Map<ResultContainer<StatusResponseDto>>(status);
 
             return result;
         }

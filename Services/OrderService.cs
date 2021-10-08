@@ -16,7 +16,7 @@ namespace Services
         private readonly IUserService _userService;
         private readonly IStatusService _statusService;
         private readonly IMapper _mapper;
-        
+
         public OrderService
         (
             IOrderRepository repository, 
@@ -46,9 +46,9 @@ namespace Services
             return count;
         }
 
-        public async Task<ResultContainer<ICollection<OrderResponseDto>>> GetListByPage(int pageSize, int page = 1)
+        public async Task<ResultContainer<ICollection<OrderDto>>> GetListByPage(int pageSize, int page = 1)
         {
-            var result = _mapper.Map<ResultContainer<ICollection<OrderResponseDto>>>
+            var result = _mapper.Map<ResultContainer<ICollection<OrderDto>>>
                 (await _repository.GetPage(pageSize, page));
             
             return result;
@@ -64,7 +64,7 @@ namespace Services
         public async Task<ResultContainer<OrderResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<OrderResponseDto>();
-            var getOrder = await _repository.GetById(id);
+            var getOrder = await _repository.GetByIdWithShawarmas(id);
 
             if (getOrder == null)
             {
@@ -72,7 +72,7 @@ namespace Services
                 return result;
             }
 
-            result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.GetById(id));
+            result = _mapper.Map<ResultContainer<OrderResponseDto>>(getOrder);
             return result;
         }
 

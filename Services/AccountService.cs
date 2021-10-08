@@ -85,18 +85,15 @@ namespace Services
             return viewModel;
         }
         
-        public async Task<IndexViewModel<OrderResponseDto>> GetOrdersPage( bool needOnlyActual, int page = 1)
+        public async Task<IndexViewModel<OrderDto>> GetOrdersPage( bool needOnlyActual, int page = 1)
         {
             var count = await _orderService.Count();
-            ResultContainer<ICollection<OrderResponseDto>> viewPage;
+            ResultContainer<ICollection<OrderDto>> viewPage;
             
-            if (needOnlyActual)
-                viewPage = await _orderService.GetActualListByPage(DateTime.Today, _pageSize, page);
-            else
-                viewPage = await _orderService.GetListByPage(_pageSize, page);
+            viewPage = await _orderService.GetListByPage(_pageSize, page);
             
             var pageViewModel = new PageViewModel(count, page, _pageSize);
-            var viewModel = new IndexViewModel<OrderResponseDto>
+            var viewModel = new IndexViewModel<OrderDto>
             {
                 PageViewModel = pageViewModel,
                 Things = viewPage.Data

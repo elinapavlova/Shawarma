@@ -4,7 +4,6 @@ using Infrastructure.Options;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Models.Status;
 using Services.Contracts;
 
@@ -20,11 +19,11 @@ namespace API.Controllers
         public StatusController
         (
             IStatusService service,
-            IConfiguration configuration
+            AppSettingsOptions appSettings
         )
         {
             _statusService = service;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSettings.DefaultPageSize;
         }
         
         /// <summary>

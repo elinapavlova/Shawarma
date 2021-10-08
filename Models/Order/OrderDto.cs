@@ -2,9 +2,9 @@
 
 namespace Models.Order
 {
-    public class OrderRequestDto : BaseModel
+    public class OrderDto : BaseModel
     {
-        public DateTime Date = DateTime.Now;
+        public DateTime Date { get; set; }
         public int IdStatus { get; set; }
         public int IdUser { get; set; }
         public decimal Cost { get; set; }

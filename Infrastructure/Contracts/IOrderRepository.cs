@@ -9,5 +9,6 @@ namespace Infrastructure.Contracts
     {
         Task<ICollection<Order>> GetActualList(DateTime date);
         Task<ICollection<Order>> GetActualListByPage(DateTime date, int pageSize, int page = 1);
+        Task<Order> GetByIdWithShawarmas(int id);
     }
 }

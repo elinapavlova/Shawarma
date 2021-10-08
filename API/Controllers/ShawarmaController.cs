@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Models.Shawarma;
 using Services.Contracts;
 
@@ -21,11 +19,11 @@ namespace API.Controllers
         public ShawarmaController
         (
             IShawarmaService service,
-            IConfiguration configuration
+            AppSettingsOptions appSetings
         )
         {
             _shawarmaService = service;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSetings.DefaultPageSize;
         }
 
         /// <summary>

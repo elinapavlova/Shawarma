@@ -42,15 +42,15 @@ namespace Services
         public async Task<ResultContainer<ShawarmaResponseDto>> GetById(int id)
         {
             var result = new ResultContainer<ShawarmaResponseDto>();
-            var getShawarma = await _repository.GetById(id);
+            var shawarma = await _repository.GetById(id);
 
-            if (getShawarma == null)
+            if (shawarma == null)
             {
                 result.ErrorType = ErrorType.NotFound;
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(await _repository.GetById(id));
+            result = _mapper.Map<ResultContainer<ShawarmaResponseDto>>(shawarma);
 
             return result;
         }

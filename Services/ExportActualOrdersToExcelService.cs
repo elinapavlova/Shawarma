@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using AutoMapper.Configuration;
 using Models.ViewModels;
 using Services.Contracts;
 
@@ -64,7 +63,6 @@ namespace Services
                         Date = shawarma.Date,
                         User = user.Data.UserName,
                         Status = status.Data.Name,
-                        Comment = shawarma.Comment,
                         Cost = shawarma.Cost,
                         OrderShawarmas = orderShawa
                     });

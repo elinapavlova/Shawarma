@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Infrastructure.Contracts;
+using Infrastructure.Options;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
 using Infrastructure.SwaggerConfiguration;
@@ -42,6 +43,10 @@ namespace API
             {
                 client.BaseAddress = new Uri(Configuration["BaseAddress:DadataUri"]);
             });
+
+            services.Configure<AppSettingsOptions>(Configuration.GetSection(AppSettingsOptions.AppSettings));
+            var appSettings = Configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>();
+            services.AddSingleton(appSettings);
             
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();

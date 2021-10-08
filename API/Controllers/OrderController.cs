@@ -5,7 +5,6 @@ using Infrastructure.Options;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Models.Order;
 using Services.Contracts;
 
@@ -21,11 +20,11 @@ namespace API.Controllers
         public OrderController
         (
             IOrderService orderService,
-            IConfiguration configuration
+            AppSettingsOptions appSettings
         )
         {
             _orderService = orderService;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSettings.DefaultPageSize;
         }
 
         /// <summary>
@@ -33,14 +32,14 @@ namespace API.Controllers
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet]
-        public async Task<ActionResult<ResultContainer<ICollection<OrderResponseDto>>>> GetOrderList(int page = 1)
+        public async Task<ActionResult<ResultContainer<ICollection<OrderDto>>>> GetOrderList(int page = 1)
         {
-            return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
+            return await ReturnResult<ResultContainer<ICollection<OrderDto>>, ICollection<OrderDto>>
                 (_orderService.GetListByPage(_pageSize, page));
         }
         
         /// <summary>
-        /// Get all actual (today) orders
+        /// Get all actual orders
         /// </summary>
         /// <response code="200">Returns all orders</response>
         [HttpGet("{date:datetime}")]
@@ -48,7 +47,7 @@ namespace API.Controllers
             (DateTime date, int page = 1)
         {
             return await ReturnResult<ResultContainer<ICollection<OrderResponseDto>>, ICollection<OrderResponseDto>>
-                (_orderService.GetActualListByPage(DateTime.Today, _pageSize, page));
+                (_orderService.GetActualListByPage(date, _pageSize, page));
         }
         
         /// <summary>

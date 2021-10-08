@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Models.Role;
 using Services.Contracts;
 
@@ -21,11 +19,11 @@ namespace API.Controllers
         public RoleController
         (
             IRoleService service,
-            IConfiguration configuration
+            AppSettingsOptions appSettings
         )
         {
             _roleService = service;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSettings.DefaultPageSize;
         }
        
         /// <summary>

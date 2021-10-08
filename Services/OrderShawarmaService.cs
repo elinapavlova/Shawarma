@@ -58,7 +58,7 @@ namespace Services
                 return result;
             }
             
-            result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(await _repository.GetById(id));
+            result = _mapper.Map<ResultContainer<OrderShawarmaResponseDto>>(getOrderShawarma);
 
             return result;
         }

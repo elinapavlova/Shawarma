@@ -6,24 +6,19 @@ using Database;
 using Infrastructure.Contracts;
 using Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Models.Shawarma;
 
 namespace Infrastructure.Repository
 {
-    public class ShawarmaRepository : IShawarmaRepository
+    public class ShawarmaRepository : BaseRepository<Shawarma>, IShawarmaRepository
     {
         private readonly ApiContext _db;
         private readonly int _pageSize;
         
-        public ShawarmaRepository
-        (
-            ApiContext context, 
-            IConfiguration configuration
-        )
+        public ShawarmaRepository(ApiContext context, AppSettingsOptions appSettings) : base (context, appSettings)
         {
             _db = context;
-            _pageSize = configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>().DefaultPageSize;
+            _pageSize = appSettings.DefaultPageSize;
         }
 
         public async Task<ICollection<Shawarma>> GetActualShawarmaList()
@@ -35,58 +30,13 @@ namespace Infrastructure.Repository
             return shawarmas; 
         }
 
-        public async Task<int> Count()
-        {
-            var count = await _db.Shawarmas.CountAsync();
-            return count;
-        }
-
         public async Task<Shawarma> GetShawarmaByName(string name)
         {
             var shawarma = await _db.Shawarmas.FirstOrDefaultAsync(s => s.Name != null && name == s.Name);
             return shawarma;
         }
 
-        public async Task<Shawarma> GetById(int id)
-        {
-            var shawarma = await _db.Shawarmas.FindAsync(id);
-            return shawarma;
-        }
-
-        public async Task<Shawarma> Create(Shawarma shawarma)
-        {
-            await _db.Shawarmas.AddAsync(shawarma);
-            await _db.SaveChangesAsync();
-            return shawarma;
-        }
-
-        public async Task<Shawarma> Edit(Shawarma newShawarma)
-        {
-            var shawarma = await _db.Shawarmas
-                .FirstOrDefaultAsync(s => s.Name != null && newShawarma.Name == s.Name);
-
-            if (shawarma == null)
-                return null;
-
-            shawarma.Name = newShawarma.Name;
-            shawarma.Cost = newShawarma.Cost;
-            shawarma.IsActual = newShawarma.IsActual;
-
-            _db.Shawarmas.Update(shawarma);
-            await _db.SaveChangesAsync();
-
-            return shawarma;
-        }
-
-        public async Task<Shawarma> Delete(int id)
-        {
-            var shawarma = await _db.Shawarmas.FindAsync(id);
-            _db.Shawarmas.Remove(shawarma);
-            await _db.SaveChangesAsync();
-            return shawarma;
-        }
-
-        public async Task<ICollection<Shawarma>> ApplyPaging(int pageSize, int page = 1)
+        private async Task<ICollection<Shawarma>> ApplyPaging(int pageSize, int page = 1)
         {
             var shawarmas = await _db.Shawarmas
                 .OrderBy(s => s.Id)
@@ -96,7 +46,7 @@ namespace Infrastructure.Repository
             return shawarmas;
         }
 
-        public async Task<ICollection<Shawarma>> ApplyPagingForActualShawarma(int pageSize, int page = 1)
+        private async Task<ICollection<Shawarma>> ApplyPagingForActualShawarma(int pageSize, int page = 1)
         {
             var shawarmas = await _db.Shawarmas
                 .OrderBy(s => s.Id)
@@ -106,14 +56,7 @@ namespace Infrastructure.Repository
                 .ToListAsync();
             return shawarmas;
         }
-        
-        public async Task<ICollection<Shawarma>> GetList()
-        {
-            var shawarmas = await _db.Shawarmas
-                .OrderBy(u => u.Id)
-                .ToListAsync();
-            return shawarmas;
-        }
+
 
         public async Task<ICollection<Shawarma>> GetPage(int pageSize, bool needOnlyActual, int page = 1)
         {
@@ -127,7 +70,7 @@ namespace Infrastructure.Repository
             return result;
         }
 
-        public Task<ICollection<Shawarma>> GetPage(int pageSize, int page = 1)
+        public new Task<ICollection<Shawarma>> GetPage(int pageSize, int page = 1)
         {
             throw new NotImplementedException();
         }
