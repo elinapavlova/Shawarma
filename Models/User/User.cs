@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Models.Role;
 
 namespace Models.User
 {
@@ -10,8 +9,7 @@ namespace Models.User
         public string UserName { get; set; }
         public string Address { get; set; }
         public int IdRole { get; set; }
-
-        public RolesEnum Role { get; set; }
+        
         public List<Order.Order> Orders { get; set; }
     }
 }

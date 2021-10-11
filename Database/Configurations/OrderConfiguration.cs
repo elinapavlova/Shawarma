@@ -16,13 +16,6 @@ namespace Database.Configurations
                 .HasOne(p => p.User)
                 .WithMany(t => t.Orders)
                 .HasForeignKey(p => p.IdUser);
-            
-            builder.ToTable("Orders")
-                .HasOne(p => p.Status)
-                .WithMany(t => t.Orders)
-                .HasForeignKey(p => p.IdStatus);
-
-
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
-using Models.Role;
+using Models.Enums;
 using Models.User;
 
 namespace API.Controllers
@@ -15,22 +15,19 @@ namespace API.Controllers
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
         private readonly IShawarmaService _shawarmaService;
-        private readonly IStatusService _statusService;
 
         public AccountController
         (
             IAuthService authService,
             IAccountService accountService,
             IJwtService jwtService,
-            IShawarmaService shawarmaService,
-            IStatusService statusService
+            IShawarmaService shawarmaService
         )
         {
             _authService = authService;
             _jwtService = jwtService;
             _accountService = accountService;
             _shawarmaService = shawarmaService;
-            _statusService = statusService;
         }
         
         public async Task<ActionResult> IndexAdmin()
@@ -123,10 +120,10 @@ namespace API.Controllers
             var user = await VerifyJwt();
             var viewModel = await _accountService.GetOrdersPage(false, page);
             var shawarmas = await _shawarmaService.GetList();
-            var statuses = await _statusService.GetList();
+            var statuses = Enum.GetValues(typeof(RolesEnum));
 
             ViewBag.Shawarmas = shawarmas.Data;
-            ViewBag.Statuses = statuses.Data;
+            ViewBag.Statuses = statuses;
             
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
         }
@@ -136,10 +133,10 @@ namespace API.Controllers
             var user = await VerifyJwt();
             var viewModel = await _accountService.GetOrdersPage(true, page);
             var shawarmas = await _shawarmaService.GetList();
-            var statuses = await _statusService.GetList();
+            var statuses = Enum.GetValues(typeof(RolesEnum));
 
             ViewBag.Shawarmas = shawarmas.Data;
-            ViewBag.Statuses = statuses.Data;
+            ViewBag.Statuses = statuses;
             
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
         }
@@ -173,9 +170,9 @@ namespace API.Controllers
             
             var viewModel = await _accountService.GetOrdersByUserPage(id, page);
             var shawarmas = await _shawarmaService.GetList();
-            var statuses = await _statusService.GetList();
+            var statuses = Enum.GetValues(typeof(RolesEnum));
             ViewBag.Shawarmas = shawarmas.Data;
-            ViewBag.Statuses = statuses.Data;
+            ViewBag.Statuses = statuses;
 
             return !user.ErrorType.HasValue ? View(viewModel) : Unauthorized();
 

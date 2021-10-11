@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Result;
+using Models.Enums;
 using Models.Error;
 using Models.Order;
 using Services.Contracts;
@@ -14,20 +15,17 @@ namespace Services
     {
         private readonly IOrderRepository _repository;
         private readonly IUserService _userService;
-        private readonly IStatusService _statusService;
         private readonly IMapper _mapper;
 
         public OrderService
         (
             IOrderRepository repository, 
             IMapper mapper, 
-            IUserService userService,
-            IStatusService statusService
+            IUserService userService
         )
         {
             _repository = repository;
             _userService = userService;
-            _statusService = statusService;
             _mapper = mapper;
         }
 
@@ -97,6 +95,7 @@ namespace Services
                 return getOrder;
             }
 
+            orderDto.IdStatus = 1;
             var newOrder = _mapper.Map<Order>(orderDto);
             result = _mapper.Map<ResultContainer<OrderResponseDto>>(await _repository.Create(newOrder));
 
@@ -106,11 +105,11 @@ namespace Services
         public async Task<ResultContainer<OrderResponseDto>> Edit(OrderRequestDto orderDto)
         {
             var user = await _userService.GetById(orderDto.IdUser);
-            var status = await _statusService.GetById(orderDto.IdStatus);
+            var status = Enum.GetName(typeof(StatusesEnum), orderDto.IdStatus);
             var getOrder = await GetById(orderDto.Id);
             ResultContainer<OrderResponseDto> result;
 
-            if (status.Data == null || getOrder.Data == null)
+            if (status == null || getOrder.Data == null)
             {
                 getOrder.ErrorType = ErrorType.NotFound;
                 return getOrder;

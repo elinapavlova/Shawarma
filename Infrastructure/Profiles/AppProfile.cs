@@ -3,9 +3,7 @@ using AutoMapper;
 using Infrastructure.Result;
 using Models.Order;
 using Models.OrderShawarma;
-using Models.Role;
 using Models.Shawarma;
-using Models.Status;
 using Models.User;
 using Models.ViewModels;
 
@@ -48,17 +46,8 @@ namespace Infrastructure.Profiles
                 opt 
                     => opt.MapFrom(s => s));
             CreateMap<ShawarmaImportViewModel, ShawarmaRequestDto>();
-            
-            
-            CreateMap<StatusRequestDto, Status>();
-            CreateMap<Status, StatusResponseDto>();
-            CreateMap<Status, ResultContainer<StatusResponseDto>>().ForMember("Data", opt
-                 => opt.MapFrom(s => s));
-            CreateMap<ICollection<Status>, ResultContainer<ICollection<StatusResponseDto>>>().ForMember("Data", 
-                 opt 
-                     => opt.MapFrom(s => s));      
-            
-            
+
+
             CreateMap<OrderShawarmaRequestDto, OrderShawarma>();
             CreateMap<OrderShawarma, OrderShawarmaResponseDto>();
             CreateMap<OrderShawarmaResponseDto, OrderShawarmaRequestDto>();

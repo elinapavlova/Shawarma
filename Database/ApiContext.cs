@@ -2,9 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Models.Order;
 using Models.OrderShawarma;
-using Models.Role;
 using Models.Shawarma;
-using Models.Status;
 using Models.User;
 
 namespace Database
@@ -14,7 +12,6 @@ namespace Database
         public DbSet<User> Users { get; set; }
         public DbSet<Shawarma> Shawarmas { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<Status> Statuses { get; set; }
         public DbSet<OrderShawarma> OrderShawarmas { get; set; }
 
         public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
@@ -24,7 +21,6 @@ namespace Database
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ShawarmaConfiguration());
             modelBuilder.ApplyConfiguration(new OrderConfiguration());
-            modelBuilder.ApplyConfiguration(new StatusConfiguration());
             modelBuilder.ApplyConfiguration(new OrderShawarmaConfiguration());
         }
     }

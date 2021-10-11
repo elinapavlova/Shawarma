@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Models.Enums;
 using Models.ViewModels;
 using Services.Contracts;
 
@@ -13,7 +14,6 @@ namespace Services
     public class ExportActualOrdersToExcelService : IExportActualOrdersToExcelService
     {
         private readonly IOrderService _orderService;
-        private readonly IStatusService _statusService;
         private readonly IUserService _userService;
         private readonly IShawarmaService _shawarmaService;
         private readonly IHttpClientFactory _clientFactory;
@@ -21,14 +21,12 @@ namespace Services
         public ExportActualOrdersToExcelService
         (
             IOrderService orderService,
-            IStatusService statusService,
             IUserService userService,
             IShawarmaService shawarmaService,
             IHttpClientFactory clientFactory 
         )
         {
             _orderService = orderService;
-            _statusService = statusService;
             _userService = userService;
             _shawarmaService = shawarmaService;
             _clientFactory = clientFactory;
@@ -44,7 +42,7 @@ namespace Services
                 foreach (var shawarma in shawarmas.Data)
                 {
                     var orderShawa = new List<OrderShawarmaViewModel>();
-                    var status = await _statusService.GetById(shawarma.IdStatus);
+                    var status = Enum.GetName(typeof(StatusesEnum), shawarma.IdStatus);
                     var user = await _userService.GetById(shawarma.IdUser);
 
                     foreach (var shawa in shawarma.OrderShawarmas)
@@ -62,7 +60,7 @@ namespace Services
                         Id = shawarma.Id,
                         Date = shawarma.Date,
                         User = user.Data.UserName,
-                        Status = status.Data.Name,
+                        Status = status,
                         Cost = shawarma.Cost,
                         OrderShawarmas = orderShawa
                     });

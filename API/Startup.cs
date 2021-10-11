@@ -57,10 +57,7 @@ namespace API
 
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IOrderRepository, OrderRepository>();
-            
-            services.AddScoped<IStatusService, StatusService>();
-            services.AddScoped<IStatusRepository, StatusRepository>();
-            
+
             services.AddScoped<IOrderShawarmaService, OrderShawarmaService>();
             services.AddScoped<IOrderShawarmaRepository, OrderShawarmaRepository>();
             

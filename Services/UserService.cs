@@ -5,8 +5,8 @@ using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Result;
 using Infrastructure.Validate;
+using Models.Enums;
 using Models.Error;
-using Models.Role;
 using Models.User;
 using Services.Contracts;
 
