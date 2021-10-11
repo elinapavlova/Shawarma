@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.User;
@@ -47,27 +48,11 @@ namespace API.Controllers
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
         public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
         {
             return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
                 ( _userService.GetById(id));
-        }
-
-        /// <summary>
-        /// Creates a user
-        /// </summary>
-        /// <param name="userDto"></param>
-        /// <response code="201">Return the newly created user</response>
-        /// <response code="204">If the user already exists</response>
-        /// <response code="400">If the user is null or user role is not exists</response>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<UserRequestDto>> CreateUser(UserRequestDto userDto)
-        {
-            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
-                (_userService.Create(userDto));
         }
 
         /// <summary>

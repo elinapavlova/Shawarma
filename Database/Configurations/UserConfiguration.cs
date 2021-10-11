@@ -14,10 +14,6 @@ namespace Database.Configurations
             builder.ToTable("Users").Property(p => p.UserName).IsRequired();
             builder.ToTable("Users").Property(p => p.Address).IsRequired();
             
-            builder.ToTable("Users")
-                .HasOne(p => p.Role)
-                .WithMany(t => t.Users)
-                .HasForeignKey(p => p.IdRole);
         }
     }
 }

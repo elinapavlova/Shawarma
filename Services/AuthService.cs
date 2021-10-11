@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Infrastructure.Result;
 using Infrastructure.Validate;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Models.Error;
+using Models.Role;
 using Models.User;
 using Services.Contracts;
 
@@ -18,20 +17,17 @@ namespace Services
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
         private readonly IHttpClientFactory _clientFactory;
-        private readonly IRoleService _roleService;
-        
+
         public AuthService
         (
             IUserService userService,
             IJwtService jwtService,
-            IHttpClientFactory clientFactory,
-            IRoleService roleService
+            IHttpClientFactory clientFactory
         )
         {
             _userService = userService;
             _jwtService = jwtService;
             _clientFactory = clientFactory;
-            _roleService = roleService;
         }
         
         public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
@@ -117,16 +113,16 @@ namespace Services
         public async Task<ClaimsPrincipal> CreatePrincipals(UserResponseDto user)
         {
             var token = _jwtService.Generate(user.Id, user.IdRole);
-            var role = await _roleService.GetById(user.IdRole);
+            var role = Enum.GetName(typeof(RolesEnum), user.IdRole);
 
-            if (role.Data == null)
+            if (role == null)
                 return null;
             
             var claims = new List<Claim>
             {
                 new (ClaimsIdentity.DefaultNameClaimType, user.Email),
                 new ("Token", token),
-                new (ClaimTypes.Role, role.Data.Name)
+                new (ClaimTypes.Role, role)
             };
 
             var id = new ClaimsIdentity

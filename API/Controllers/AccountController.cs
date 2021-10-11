@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
 using Infrastructure.Result;
 using Microsoft.AspNetCore.Http;
+using Models.Role;
 using Models.User;
 
 namespace API.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IRoleService _roleService;
         private readonly IAccountService _accountService;
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
@@ -19,7 +19,6 @@ namespace API.Controllers
 
         public AccountController
         (
-            IRoleService roleService,
             IAuthService authService,
             IAccountService accountService,
             IJwtService jwtService,
@@ -27,7 +26,6 @@ namespace API.Controllers
             IStatusService statusService
         )
         {
-            _roleService = roleService;
             _authService = authService;
             _jwtService = jwtService;
             _accountService = accountService;
@@ -189,7 +187,7 @@ namespace API.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Register()
         {
-            ViewBag.Roles =  await _roleService.GetSelectList();
+            ViewBag.Roles =  Enum.GetNames(typeof(RolesEnum));
             return View();
         }
         

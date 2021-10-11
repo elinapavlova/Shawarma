@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
 using Infrastructure.Result;
 using Infrastructure.Validate;
 using Models.Error;
+using Models.Role;
 using Models.User;
 using Services.Contracts;
 
@@ -13,19 +15,16 @@ namespace Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _repository;
-        private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
 
         public UserService
         (
             IUserRepository repository, 
-            IMapper mapper, 
-            IRoleService roleService
+            IMapper mapper
         )
         {
             _repository = repository;
             _mapper = mapper;
-            _roleService = roleService;
         }
         
         public async Task<ResultContainer<ICollection<UserResponseDto>>> GetList()
@@ -75,15 +74,15 @@ namespace Services
         public async Task<ResultContainer<UserResponseDto>> Create(UserRequestDto userDto)
         {
             var getUser = await GetByEmail(userDto.Email);
-            var roleOfUser = await _roleService.GetById(userDto.IdRole);
+            var roleOfUser = Enum.GetName(typeof(RolesEnum), userDto.IdRole);
             
-            if (userDto.Email == null)
+            if (userDto.Email == null || roleOfUser == null)
             {
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;
             }
 
-            if (getUser.Data != null || roleOfUser.Data == null)
+            if (getUser.Data != null)
             {
                 getUser.ErrorType = ErrorType.BadRequest;
                 return getUser;
@@ -96,11 +95,11 @@ namespace Services
 
         public async Task<ResultContainer<UserResponseDto>> Edit(UserRequestDto userDto)
         {
-            var getUser = await GetById(userDto.Id);
-            var roleOfUser = await _roleService.GetById(userDto.IdRole);
+            var getUser = await GetByEmail(userDto.Email);
+            var roleOfUser = Enum.GetName(typeof(RolesEnum), userDto.IdRole);
             var isValidEmail = Validator.EmailIsValid(userDto.Email);
 
-            if (roleOfUser.Data == null)
+            if (roleOfUser == null)
             {
                 getUser.ErrorType = ErrorType.NotFound;
                 return getUser;

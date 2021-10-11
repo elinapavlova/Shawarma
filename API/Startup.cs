@@ -54,10 +54,7 @@ namespace API
 
             services.AddScoped<IShawarmaService, ShawarmaService>();
             services.AddScoped<IShawarmaRepository, ShawarmaRepository>();
-            
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            
+
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             
@@ -82,11 +79,11 @@ namespace API
             });
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
-
+            
             var connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection,  
                 x => x.MigrationsAssembly("Database")));
-            
+
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => 
                 {
@@ -117,7 +114,6 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
                 app.UseSwaggerUI(
                     opt => {
                         foreach (var description in provider.ApiVersionDescriptions) {
