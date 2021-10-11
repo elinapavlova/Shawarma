@@ -73,7 +73,7 @@ namespace Services
             return user;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> Login(UserLoginDto dto)
+        public async Task<ResultContainer<UserResponseDto>> Login(UserCredentialsDto dto)
         {
             var user = await VerifyUser(dto.Email, dto.Password);
             return user;

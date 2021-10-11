@@ -41,7 +41,7 @@ namespace API.Controllers
         /// <param name="dto"></param>
         /// <returns></returns>
         [HttpPost("Login")]
-        public async Task<ActionResult> Login(UserLoginDto dto)
+        public async Task<ActionResult> Login(UserCredentialsDto dto)
         {
             return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>(Authenticate(dto));
         }
@@ -59,7 +59,7 @@ namespace API.Controllers
             return Ok();
         }
 
-        private async Task<ResultContainer<UserResponseDto>> Authenticate(UserLoginDto dto)
+        private async Task<ResultContainer<UserResponseDto>> Authenticate(UserCredentialsDto dto)
         {
             var user = await _authService.Login(dto);
             if (user.ErrorType.HasValue)

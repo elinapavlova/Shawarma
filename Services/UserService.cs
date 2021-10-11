@@ -26,20 +26,6 @@ namespace Services
             _repository = repository;
             _mapper = mapper;
         }
-        
-        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetList()
-        {
-            var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
-                (await _repository.GetList());
-            return result;
-        }
-
-        public async Task<ResultContainer<ICollection<UserResponseDto>>> GetListByPage(int pageSize, int page = 1)
-        {
-            var result = _mapper.Map<ResultContainer<ICollection<UserResponseDto>>>
-                (await _repository.GetPage(pageSize, page));
-            return result;
-        }
 
         public async Task<ResultContainer<UserResponseDto>> GetById(int id)
         {

@@ -72,7 +72,10 @@ namespace API
 
             var mapperConfig = new MapperConfiguration(mc =>
             {
-                mc.AddProfile(new AppProfile());
+                mc.AddProfile(new DtoToDtoProfile());
+                mc.AddProfile(new ModelToDtoProfile());
+                mc.AddProfile(new DtoToModelProfile());
+                mc.AddProfile(new ModelToResultContainerProfile());
             });
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
@@ -120,6 +123,10 @@ namespace API
                         }
                     });
             }
+            
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+            
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();

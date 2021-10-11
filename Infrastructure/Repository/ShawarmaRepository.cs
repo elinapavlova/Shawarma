@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Database;
@@ -19,15 +18,6 @@ namespace Infrastructure.Repository
         {
             _db = context;
             _pageSize = appSettings.DefaultPageSize;
-        }
-
-        public async Task<ICollection<Shawarma>> GetActualShawarmaList()
-        {
-            var shawarmas = await _db.Shawarmas
-                .OrderBy(s => s.Id)
-                .Where(s => s.IsActual == true)
-                .ToListAsync();
-            return shawarmas; 
         }
 
         public async Task<Shawarma> GetShawarmaByName(string name)
@@ -56,8 +46,7 @@ namespace Infrastructure.Repository
                 .ToListAsync();
             return shawarmas;
         }
-
-
+        
         public async Task<ICollection<Shawarma>> GetPage(int pageSize, bool needOnlyActual, int page = 1)
         {
             ICollection<Shawarma> result;
@@ -68,11 +57,6 @@ namespace Infrastructure.Repository
                 result = await ApplyPaging(_pageSize, page);
             
             return result;
-        }
-
-        public new Task<ICollection<Shawarma>> GetPage(int pageSize, int page = 1)
-        {
-            throw new NotImplementedException();
         }
     }
 }
