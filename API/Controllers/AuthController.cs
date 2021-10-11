@@ -1,5 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
 using Models.User;
@@ -40,8 +43,30 @@ namespace API.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult> Login(UserLoginDto dto)
         {
-            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
-                (_authService.Login(dto));
+            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>(Authenticate(dto));
+        }
+        
+        /// <summary>
+        /// Logout
+        /// </summary>
+        /// <returns></returns>
+        [Route("/api/logout")]
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = "Cookies")]
+        public async Task<ActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok();
+        }
+
+        private async Task<ResultContainer<UserResponseDto>> Authenticate(UserLoginDto dto)
+        {
+            var user = await _authService.Login(dto);
+            if (user.ErrorType.HasValue)
+                return user;
+            var principal = await _authService.CreatePrincipals(user.Data);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            return user;
         }
     }
 }

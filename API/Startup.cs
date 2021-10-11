@@ -11,6 +11,7 @@ using Infrastructure.Options;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
 using Infrastructure.SwaggerConfiguration;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -81,11 +82,18 @@ namespace API
             });
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
-            
-            
+
             var connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection,  
                 x => x.MigrationsAssembly("Database")));
+            
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => 
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/api/Auth/Login");
+                    options.LogoutPath = new Microsoft.AspNetCore.Http.PathString("/api/Auth/Logout");
+                    options.Cookie.HttpOnly = true;
+                });
 
             services.AddApiVersioning(options =>
             {

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using Infrastructure.Result;
 using Models.User;
 
@@ -10,5 +11,6 @@ namespace Services.Contracts
         Task<ResultContainer<UserResponseDto>> VerifyJwt(string jwt);
         Task<ResultContainer<UserResponseDto>> Login(UserLoginDto dto);
         Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto);
+        Task<ClaimsPrincipal> CreatePrincipals(UserResponseDto user);
     }
 }
