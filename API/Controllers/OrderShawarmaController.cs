@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.OrderShawarma;
@@ -12,6 +13,7 @@ namespace API.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrderShawarmaController : BaseController
     {
         private readonly IOrderShawarmaService _orderShawarmaService;

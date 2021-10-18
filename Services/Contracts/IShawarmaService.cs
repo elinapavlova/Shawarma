@@ -12,7 +12,7 @@ namespace Services.Contracts
         Task<ResultContainer<ICollection<ShawarmaResponseDto>>> GetList();
         Task<ResultContainer<ShawarmaResponseDto>> GetById(int id);
         Task<ResultContainer<ShawarmaResponseDto>> GetByName(string name);
-        Task<int> Count();
+        Task<ResultContainer<int>> Count(bool onlyActual);
         Task<ResultContainer<ShawarmaResponseDto>> Create(ShawarmaRequestDto shawarma);
         Task<ResultContainer<ShawarmaResponseDto>> Edit(ShawarmaRequestDto shawarma);
         Task<ResultContainer<ShawarmaResponseDto>> Delete(int id);

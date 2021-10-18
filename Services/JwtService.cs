@@ -1,58 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
-using System.Text;
+using Infrastructure.Configurations;
 using Infrastructure.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Models.Tokens;
+using Models.User;
 using Services.Contracts;
 
 namespace Services
 {
     public class JwtService : IJwtService
     {
-        private readonly string _secretKey;
+        private readonly ISet<RefreshToken> _refreshTokens = new HashSet<RefreshToken>();
+        private readonly TokenOptions _tokenOptions;
+        private readonly SigningConfiguration _signingConfiguration;
 
-        public JwtService(AppSettingsOptions appSettings)
+        public JwtService
+        (
+            IOptions<TokenOptions> options, 
+            SigningConfiguration signingConfiguration
+        )
         {
-            _secretKey = appSettings.Secret;
+            _tokenOptions = options.Value;
+            _signingConfiguration = signingConfiguration;
         }
         
-        public string Generate(int id, int idRole)
+        public AccessToken CreateAccessToken(UserCredentialsDto user)
         {
-            IEnumerable<Claim> claims = new List<Claim>
-            {
-                new ("idRole", idRole.ToString())
-            };
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
-            
-            var credentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
-            
-            var header = new JwtHeader(credentials);
-            
-            var payload = new JwtPayload
-                (id.ToString(), null, claims,null, DateTime.Today.AddDays(1)); // 1 day
-            
-            var securityToken = new JwtSecurityToken(header, payload);
+            var refreshToken = BuildRefreshToken();
+            _refreshTokens.Add(refreshToken);
+            var accessToken = BuildAccessToken(user, refreshToken);
+            _refreshTokens.Add(refreshToken);
 
-            return new JwtSecurityTokenHandler().WriteToken(securityToken);
+            return accessToken;
         }
 
-        public JwtSecurityToken Verify(string jwt)
+        public RefreshToken TakeRefreshToken(string token)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            
-            var key = Encoding.ASCII.GetBytes(_secretKey);
-            
-            tokenHandler.ValidateToken(jwt, new TokenValidationParameters
-            {
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = false,
-                ValidateAudience = false
-            }, out var validatedToken);
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
 
-            return (JwtSecurityToken) validatedToken;
+            var refreshToken = _refreshTokens.SingleOrDefault(t => t.Token == token);
+            if (refreshToken != null)
+                _refreshTokens.Remove(refreshToken);
+
+            return refreshToken;
+        }
+
+        private RefreshToken BuildRefreshToken()
+        {
+            var refreshToken = new RefreshToken
+            (
+                Guid.NewGuid().ToString(),
+                DateTime.UtcNow.AddSeconds(_tokenOptions.RefreshTokenExpiration).Ticks
+            );
+
+            return refreshToken;
+        }
+
+        private AccessToken BuildAccessToken(UserCredentialsDto user, RefreshToken refreshToken)
+        {
+            var accessTokenExpiration = DateTime.UtcNow.AddSeconds(_tokenOptions.AccessTokenExpiration);
+            var claims = GetClaims(user);
+
+            if (claims == null)
+                return null;
+            
+            var securityToken = new JwtSecurityToken
+            (
+                _tokenOptions.Issuer,
+                _tokenOptions.Audience,
+                claims,
+                expires : accessTokenExpiration,
+                notBefore : DateTime.UtcNow,
+                signingCredentials : _signingConfiguration.SigningCredentials
+            );
+
+            var handler = new JwtSecurityTokenHandler();
+            var accessToken = handler.WriteToken(securityToken);
+
+            return new AccessToken(accessToken, accessTokenExpiration.Ticks, refreshToken);
+        }
+
+        private static IEnumerable<Claim> GetClaims(UserCredentialsDto user)
+        {
+            var claims = new List<Claim>
+            {
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new (JwtRegisteredClaimNames.Sub, user.Email),
+            };
+            return claims;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Order;
@@ -13,6 +14,7 @@ namespace API.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrderController : BaseController
     {
         private readonly IOrderService _orderService;

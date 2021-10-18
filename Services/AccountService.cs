@@ -72,10 +72,10 @@ namespace Services
 
         public async Task<IndexViewModel<ShawarmaResponseDto>> GetShawarmaPage(bool needOnlyActual, int page = 1)
         {
-            var count = await _shawarmaService.Count();
+            var count = await _shawarmaService.Count(true);
             var viewPage = await _shawarmaService.GetListByPage(_pageSize, needOnlyActual, page);
 
-            var pageViewModel = new PageViewModel(count, page, _pageSize);
+            var pageViewModel = new PageViewModel(count.Data, page, _pageSize);
             var viewModel = new IndexViewModel<ShawarmaResponseDto>
             {
                 PageViewModel = pageViewModel,

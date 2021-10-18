@@ -7,6 +7,7 @@ namespace Infrastructure.Contracts
     public interface IShawarmaRepository : IBaseRepository<Shawarma>
     {
         Task<Shawarma> GetShawarmaByName(string name);
+        Task<int> CountActual();
         Task<ICollection<Shawarma>> GetPage(int pageSize,  bool needOnlyActual, int page = 1);
     }
 }

@@ -11,7 +11,7 @@ namespace API.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Cookies")]
+    [Authorize]
     public class UserController : BaseController
     {
         private readonly IUserService _userService;

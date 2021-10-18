@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Services.Contracts;
-using Infrastructure.Result;
-using Microsoft.AspNetCore.Authorization;
 using Models.Enums;
 using Models.User;
 
@@ -27,34 +25,16 @@ namespace API.Controllers
             _shawarmaService = shawarmaService;
         }
         
-        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> IndexAdmin()
         {
             return View();
         }
-
-        [Authorize(Roles = "Client")]
+        
         public async Task<ActionResult> IndexClient()
         {
             return View();
         }
-
-        public async Task<ActionResult<ResultContainer<UserResponseDto>>> Index(UserCredentialsDto dto)
-        {
-            var user = await _authService.VerifyUser(dto.Email, dto.Password);
-            
-            if (user.ErrorType.HasValue)
-                return user;
-            
-            ViewBag.Id = user.Data.Id;
-            
-            return user.Data.IdRole switch
-            {
-                1 => RedirectToAction("IndexAdmin", "Account"),
-                2 => RedirectToAction("IndexClient", "Account"),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
+        
         
         /// <summary>
         /// Переход к авторизации после успешной регистрации

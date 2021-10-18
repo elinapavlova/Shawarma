@@ -26,6 +26,12 @@ namespace Infrastructure.Repository
             return shawarma;
         }
 
+        public async Task<int> CountActual()
+        {
+            var count = await _db.Shawarmas.Where(s => s.IsActual).CountAsync();
+            return count;
+        }
+
         private async Task<ICollection<Shawarma>> ApplyPaging(int pageSize, int page = 1)
         {
             var shawarmas = await _db.Shawarmas

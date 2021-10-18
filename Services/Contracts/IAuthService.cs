@@ -1,15 +1,14 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Infrastructure.Result;
+using Models.Tokens;
 using Models.User;
 
 namespace Services.Contracts
 {
     public interface IAuthService
     {
-        Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password);
-        Task<ResultContainer<UserResponseDto>> Login(UserCredentialsDto dto);
+        Task<ResultContainer<AccessTokenDto>> Login(UserCredentialsDto dto);
         Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto);
-        Task<ClaimsPrincipal> CreatePrincipals(UserResponseDto user);
+        Task<ResultContainer<AccessTokenDto>> RefreshTokenAsync(string refreshToken, string userEmail);
     }
 }

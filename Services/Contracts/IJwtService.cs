@@ -1,10 +1,12 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Models.Tokens;
+using Models.User;
 
 namespace Services.Contracts
 {
     public interface IJwtService
     {
-        string Generate(int id, int idRole);
-        JwtSecurityToken Verify(string jwt);
+        AccessToken CreateAccessToken(UserCredentialsDto user);
+        RefreshToken TakeRefreshToken(string token);
+
     }
 }

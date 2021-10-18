@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Infrastructure.Contracts;
@@ -59,7 +58,7 @@ namespace Services
 
         public async Task<ResultContainer<UserResponseDto>> Create(UserRequestDto userDto)
         {
-            var getUser = await GetByEmail(userDto.Email);
+            var getUser = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.GetUserByEmail(userDto.Email));
             var roleOfUser = Enum.GetName(typeof(RolesEnum), userDto.IdRole);
             
             if (userDto.Email == null || roleOfUser == null)
@@ -81,7 +80,7 @@ namespace Services
 
         public async Task<ResultContainer<UserResponseDto>> Edit(UserRequestDto userDto)
         {
-            var getUser = await GetByEmail(userDto.Email);
+            var getUser = _mapper.Map<ResultContainer<UserResponseDto>>(await _repository.GetUserByEmail(userDto.Email));
             var roleOfUser = Enum.GetName(typeof(RolesEnum), userDto.IdRole);
             var isValidEmail = Validator.EmailIsValid(userDto.Email);
 

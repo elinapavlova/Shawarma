@@ -71,9 +71,13 @@ namespace Services
             return result;
         }
 
-        public async Task<int> Count()
+        public async Task<ResultContainer<int>> Count(bool onlyActual)
         {
-            var count = await _repository.Count();
+            var count = new ResultContainer<int>();
+            if (!onlyActual)
+                count = _mapper.Map<ResultContainer<int>>(await _repository.Count());
+            else
+                count = _mapper.Map<ResultContainer<int>>(await _repository.CountActual());
             return count;
         }
 

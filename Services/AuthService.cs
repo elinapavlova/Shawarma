@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Infrastructure.Result;
 using Infrastructure.Validate;
-using Models.Enums;
 using Models.Error;
+using Models.Tokens;
 using Models.User;
 using Services.Contracts;
 
@@ -15,68 +14,55 @@ namespace Services
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private readonly IJwtService _jwtService;
         private readonly IHttpClientFactory _clientFactory;
-
+        private readonly IJwtService _jwtService;
+        private readonly IMapper _mapper;
+        
         public AuthService
         (
             IUserService userService,
+            IHttpClientFactory clientFactory,
             IJwtService jwtService,
-            IHttpClientFactory clientFactory
+            IMapper mapper
         )
         {
             _userService = userService;
-            _jwtService = jwtService;
             _clientFactory = clientFactory;
+            _jwtService = jwtService;
+            _mapper = mapper;
         }
         
-        public async Task<ResultContainer<UserResponseDto>> VerifyUser(string username, string password)
-        {
-            var getUserByEmail = await _userService.GetByEmail(username);
-
-            if (getUserByEmail.Data == null)
-            {
-                getUserByEmail.ErrorType = ErrorType.NotFound;
-                return getUserByEmail;
-            }
-            
-            if (username == getUserByEmail.Data.Email && password == getUserByEmail.Data.Password)
-                return getUserByEmail;
-
-            var res = new ResultContainer<UserResponseDto>
-            {
-                ErrorType = ErrorType.BadRequest
-            };
-            return res;
-        }
         
-        public async Task<ResultContainer<UserResponseDto>> VerifyJwt(string jwt)
+        public async Task<ResultContainer<AccessTokenDto>> RefreshTokenAsync(string refreshToken, string userEmail)
         {
-            var user = new ResultContainer<UserResponseDto>();
-
-            if (jwt == null)
+            var result = new ResultContainer<AccessTokenDto>();
+            var token = _jwtService.TakeRefreshToken(refreshToken);
+            var userDto = await _userService.GetByEmail(userEmail);
+            
+            if (token == null || token.IsExpired() || userDto.Data == null)
             {
-                user.ErrorType = ErrorType.Unauthorized;
-                return user;
+                result.ErrorType = ErrorType.BadRequest;
+                return result;
             }
             
-            var token = _jwtService.Verify(jwt);
-            
-            if (token == null)
-            {
-                user.ErrorType = ErrorType.Unauthorized;
-                return user;
-            }
-            
-            var userId = int.Parse(token.Issuer);
-            user = await _userService.GetById(userId);
-            return user;
+            var user = _mapper.Map <UserCredentialsDto>(userDto);
+            result = _mapper.Map<ResultContainer<AccessTokenDto>>(_jwtService.CreateAccessToken(user));
+            return result;
         }
-        
-        public async Task<ResultContainer<UserResponseDto>> Login(UserCredentialsDto dto)
+
+        public async Task<ResultContainer<AccessTokenDto>> Login(UserCredentialsDto data)
         {
-            var user = await VerifyUser(dto.Email, dto.Password);
-            return user;
+            var user = await _userService.GetByEmail(data.Email);
+            var result = new ResultContainer<AccessTokenDto>();
+
+            if (user.Data == null)
+            {
+                result.ErrorType = ErrorType.BadRequest;
+                return result;
+            }
+            
+            result = await CreateAccessTokenAsync(data.Email, data.Password);
+            return result;
         }
         
         public async Task<ResultContainer<UserResponseDto>> Register(UserRequestDto dto)
@@ -110,26 +96,28 @@ namespace Services
             return res;
         }
         
-        public async Task<ClaimsPrincipal> CreatePrincipals(UserResponseDto user)
+        private async Task<ResultContainer<AccessTokenDto>> CreateAccessTokenAsync(string email, string password)
         {
-            var token = _jwtService.Generate(user.Id, user.IdRole);
-            var role = Enum.GetName(typeof(RolesEnum), user.IdRole);
-
-            if (role == null)
-                return null;
+            var userDto = await _userService.GetByEmail(email);
+            var result = new ResultContainer<AccessTokenDto>();
             
-            var claims = new List<Claim>
+            if (userDto.Data == null)
             {
-                new (ClaimsIdentity.DefaultNameClaimType, user.Email),
-                new ("Token", token),
-                new (ClaimTypes.Role, role)
-            };
+                result.ErrorType = ErrorType.NotFound;
+                return result;
+            }
 
-            var id = new ClaimsIdentity
-            (claims, "ApplicationCookie", 
-                ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+            var isEqualPasswords = string.Equals(password, userDto.Data.Password);
             
-            return new ClaimsPrincipal(id);
+            if (!isEqualPasswords)
+            {
+                result.ErrorType = ErrorType.BadRequest;
+                return result;
+            }
+
+            var user = _mapper.Map<UserCredentialsDto>(userDto);
+            result = _mapper.Map<ResultContainer<AccessTokenDto>>(_jwtService.CreateAccessToken(user));
+            return result;
         }
     }
 }

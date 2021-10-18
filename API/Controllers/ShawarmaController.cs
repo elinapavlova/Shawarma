@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Infrastructure.Options;
 using Infrastructure.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Shawarma;
@@ -12,6 +13,7 @@ namespace API.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
+    [Authorize]
     public class ShawarmaController : BaseController
     {
         private readonly IShawarmaService _shawarmaService;
@@ -27,17 +29,24 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Get all shawarmas
+        /// Get actual shawarmas
         /// </summary>
-        /// <response code="200">Returns all shawarmas</response>
+        /// <response code="200">Returns actual shawarmas</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList(int page = 1)
+        public async Task<ActionResult<ResultContainer<ICollection<ShawarmaResponseDto>>>> GetShawarmaList(int page)
         {
             return await ReturnResult<ResultContainer<ICollection<ShawarmaResponseDto>>,
                 ICollection<ShawarmaResponseDto>>(_shawarmaService.GetListByPage(_pageSize, true, page));;
         }
-        
+
+        [HttpGet("Count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<int>> Count(bool onlyActual)
+        {
+            return await ReturnResult<ResultContainer<int>, int>(_shawarmaService.Count(onlyActual));
+        }
+
         /// <summary>
         /// Get shawarma by id
         /// </summary>

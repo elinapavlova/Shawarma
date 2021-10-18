@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Infrastructure.Result;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Models.Tokens;
 using Services.Contracts;
 using Models.User;
 
@@ -11,7 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
@@ -28,7 +27,8 @@ namespace API.Controllers
        /// </summary>
        /// <param name="dto"></param>
        /// <returns></returns>
-        [HttpPost("Register")]
+        [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult> Register(UserRequestDto dto)
         {
             return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>
@@ -36,37 +36,28 @@ namespace API.Controllers
         }
         
         /// <summary>
-        /// Authorisation
+        /// Authorization
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost("Login")]
-        public async Task<ActionResult> Login(UserCredentialsDto dto)
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResultContainer<AccessTokenDto>>> Login(UserCredentialsDto dto)
         {
-            return await ReturnResult<ResultContainer<UserResponseDto>, UserResponseDto>(Authenticate(dto));
+            return await ReturnResult<ResultContainer<AccessTokenDto>, AccessTokenDto>(_authService.Login(dto));
         }
         
         /// <summary>
-        /// Logout
+        /// Refresh token
         /// </summary>
+        /// <param name="refreshToken"></param>
         /// <returns></returns>
-        [Route("/api/logout")]
         [HttpPost]
-        [Authorize(AuthenticationSchemes = "Cookies")]
-        public async Task<ActionResult> Logout()
+        [Authorize]
+        public async Task<ActionResult<ResultContainer<AccessTokenDto>>> RefreshTokenAsync(RefreshTokenDto refreshToken)
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Ok();
-        }
-
-        private async Task<ResultContainer<UserResponseDto>> Authenticate(UserCredentialsDto dto)
-        {
-            var user = await _authService.Login(dto);
-            if (user.ErrorType.HasValue)
-                return user;
-            var principal = await _authService.CreatePrincipals(user.Data);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-            return user;
+            return await ReturnResult<ResultContainer<AccessTokenDto>,AccessTokenDto>
+                (_authService.RefreshTokenAsync(refreshToken.RefreshToken, refreshToken.EmailUser));
         }
     }
 }

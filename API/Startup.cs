@@ -1,6 +1,8 @@
 using System;
 using AutoMapper;
 using Database;
+using Infrastructure.Configurations;
+using Infrastructure.Configurations.SwaggerConfiguration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,13 +12,13 @@ using Infrastructure.Contracts;
 using Infrastructure.Options;
 using Infrastructure.Profiles;
 using Infrastructure.Repository;
-using Infrastructure.SwaggerConfiguration;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Services;
 using Services.Contracts;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -45,10 +47,6 @@ namespace API
                 client.BaseAddress = new Uri(Configuration["BaseAddress:DadataUri"]);
             });
 
-            services.Configure<AppSettingsOptions>(Configuration.GetSection(AppSettingsOptions.AppSettings));
-            var appSettings = Configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>();
-            services.AddSingleton(appSettings);
-            
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
 
@@ -64,6 +62,16 @@ namespace API
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAuthService, AuthService>();
+            
+            services.Configure<AppSettingsOptions>(Configuration.GetSection(AppSettingsOptions.AppSettings));
+            services.Configure<TokenOptions>(Configuration.GetSection(TokenOptions.Token));            
+            
+            var appSettings = Configuration.GetSection(AppSettingsOptions.AppSettings).Get<AppSettingsOptions>();
+            var tokenOptions = Configuration.GetSection(TokenOptions.Token).Get<TokenOptions>(); 
+            var signingConfiguration = new SigningConfiguration (tokenOptions.Secret);
+            
+            services.AddSingleton(appSettings);
+            services.AddSingleton(signingConfiguration);
 
             services.AddScoped<IExportActualOrdersToExcelService, ExportActualOrdersToExcelService>();
             services.AddScoped<IImportShawarmaFromExcelService, ImportShawarmaFromExcelService>();
@@ -84,14 +92,6 @@ namespace API
             services.AddDbContext<ApiContext>(options => options.UseNpgsql(connection,  
                 x => x.MigrationsAssembly("Database")));
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => 
-                {
-                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/api/Auth/Login");
-                    options.LogoutPath = new Microsoft.AspNetCore.Http.PathString("/api/Auth/Logout");
-                    options.Cookie.HttpOnly = true;
-                });
-
             services.AddApiVersioning(options =>
             {
                 options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -104,6 +104,21 @@ namespace API
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
             });
+            
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(x =>
+                {
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = tokenOptions.Issuer,
+                        ValidateAudience = true,
+                        ValidAudience = tokenOptions.Audience,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = signingConfiguration.SecurityKey
+                    };
+                });
+            
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
             services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
         }
@@ -123,10 +138,6 @@ namespace API
                         }
                     });
             }
-            
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
-            
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();
