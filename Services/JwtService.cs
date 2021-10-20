@@ -31,7 +31,6 @@ namespace Services
         public AccessToken CreateAccessToken(UserCredentialsDto user)
         {
             var refreshToken = BuildRefreshToken();
-            _refreshTokens.Add(refreshToken);
             var accessToken = BuildAccessToken(user, refreshToken);
             _refreshTokens.Add(refreshToken);
 
@@ -64,16 +63,12 @@ namespace Services
         private AccessToken BuildAccessToken(UserCredentialsDto user, RefreshToken refreshToken)
         {
             var accessTokenExpiration = DateTime.UtcNow.AddSeconds(_tokenOptions.AccessTokenExpiration);
-            var claims = GetClaims(user);
 
-            if (claims == null)
-                return null;
-            
             var securityToken = new JwtSecurityToken
             (
                 _tokenOptions.Issuer,
                 _tokenOptions.Audience,
-                claims,
+                GetClaims(user),
                 expires : accessTokenExpiration,
                 notBefore : DateTime.UtcNow,
                 signingCredentials : _signingConfiguration.SigningCredentials
