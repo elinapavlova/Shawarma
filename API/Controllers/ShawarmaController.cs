@@ -40,6 +40,11 @@ namespace API.Controllers
                 ICollection<ShawarmaResponseDto>>(_shawarmaService.GetListByPage(_pageSize, true, page));;
         }
 
+        /// <summary>
+        /// Get count of shawarmas
+        /// </summary>
+        /// <param name="onlyActual"></param>
+        /// <returns></returns>
         [HttpGet("Count")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<int>> Count(bool onlyActual)

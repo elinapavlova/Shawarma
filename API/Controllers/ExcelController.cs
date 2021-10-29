@@ -27,6 +27,10 @@ namespace API.Controllers
             _importService = importService;
         }
         
+        /// <summary>
+        /// Export today orders to excel report
+        /// </summary>
+        /// <returns></returns>
         [HttpPost("Export")]
         public async Task<FileContentResult> ExportToExcel()
         {
@@ -37,6 +41,11 @@ namespace API.Controllers
             };
         }
         
+        /// <summary>
+        /// Import all kinds of shawarma from excel to database
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
         [HttpPost("Import")]
         public async Task<string> ImportFromExcel([FromForm]ICollection<IFormFile> files)
         {
