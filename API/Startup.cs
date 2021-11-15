@@ -4,7 +4,6 @@ using System.Reflection;
 using AutoMapper;
 using Database;
 using Infrastructure.Configurations;
-using Infrastructure.Configurations.SwaggerConfiguration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,12 +17,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Services;
 using Services.Contracts;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API
 {
@@ -34,7 +33,7 @@ namespace API
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
         
         public void ConfigureServices(IServiceCollection services)
         {
@@ -96,7 +95,7 @@ namespace API
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
-                options.ApiVersionReader = new MediaTypeApiVersionReader("v");
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
             });
             services.AddVersionedApiExplorer(options =>
             {
@@ -118,11 +117,33 @@ namespace API
                     };
                 });
             
-            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+            services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+            
             services.AddSwaggerGen(options =>
             {
-                options.OperationFilter<SwaggerDefaultValues>();
-                // Set the comments path for the Swagger JSON and UI.
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    BearerFormat = "Bearer {authToken}",
+                    Description = "JSON Web Token to access resources. Example: Bearer {token}",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                options.AddSecurityRequirement(
+                    new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme, Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);

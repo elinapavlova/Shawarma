@@ -10,7 +10,7 @@ namespace API.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class UserController : BaseController
     {
